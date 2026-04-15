@@ -1,0 +1,4 @@
+files/kitty/scripts/.direnv/
+files/kitty/scripts/__pycache__/
+*.pyc
+.DS_Store
