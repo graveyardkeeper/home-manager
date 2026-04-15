@@ -224,7 +224,7 @@ return {
             connections = {
               -- {
               --   driver = 'sqlite3',
-              --   dataSourceName = 'file:/Users/bytedance/.local/share/newsboat/cache.db',
+              --   dataSourceName = 'file:~/.local/share/newsboat/cache.db',
               -- },
             },
           },

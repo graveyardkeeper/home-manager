@@ -9,30 +9,114 @@
 
 ## 仓库结构
 - `flake.nix`：flake 入口
+- `flake.lock`：flake 依赖锁定文件
+- `profiles/default.nix`：当前默认配置使用的机器身份信息（`system`、`username`、`homeDirectory`）
 - `home.nix`：模块聚合入口
 - `modules/`：Home Manager 模块声明
 - `files/`：被托管出去的配置内容和脚本
 - `HOME_MANAGER_REFERENCE.md`：仓库内操作参考文档
 
 ## 新机器初始化
-1. 安装 Nix。
-2. 确保 `~/.config/nix/nix.conf` 已开启 flakes。
-3. 克隆或复制 `~/.config/home-manager` 到目标机器。
-4. 执行：
-   - `source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh`
-   - `nix run ~/.config/home-manager#homeConfigurations.bytedance.activationPackage`
-5. 打开一个新的 shell，确认：
-   - `command -v nix`
-   - `command -v fish`
-   - `command -v nvim`
-   - `command -v yazi`
+### 1. 安装 Nix
+在 macOS 上，先执行官方安装脚本：
+
+```bash
+sh <(curl -L https://nixos.org/nix/install)
+```
+
+如果安装过程要求你手动执行额外命令或重启 shell，按提示完成。
+
+安装完成后，先确认：
+
+```bash
+nix --version
+```
+
+### 2. 开启 flakes
+确保 `~/.config/nix/nix.conf` 中包含：
+
+```ini
+experimental-features = nix-command flakes
+```
+
+如果这个文件还不存在，就新建它。
+
+### 3. 获取配置仓库
+把 `~/.config/home-manager` 放到目标机器上。常见方式有两种：
+- 直接 `git clone` 你的配置仓库到 `~/.config/home-manager`
+- 从旧机器复制整个 `~/.config/home-manager` 目录
+
+### 4. 首次应用配置
+当前默认入口是 `homeConfigurations.default`，它对应的机器身份信息来自仓库中的 `profiles/default.nix`，而不是当前 shell 的环境变量。
+
+进入一个已经能使用 `nix` 的 shell 后执行：
+
+```bash
+nix run ~/.config/home-manager#homeConfigurations.default.activationPackage
+```
+
+如果你此时还没有 fish 环境，也没关系，首次应用可以先在当前 shell 里完成。
+
+### 5. 首次验证
+打开一个新的 shell，确认：
+
+```bash
+command -v nix
+command -v fish
+command -v nvim
+command -v yazi
+```
+
+如果默认 shell 计划使用 fish，再额外验证：
+
+```bash
+fish -ic 'command -v nix; nix --version'
+```
+
+## 软件如何通过 Nix / Home Manager 安装和托管
+这个仓库同时管理两类东西：
+
+### 1. 软件安装
+软件包通过 Home Manager 的 `home.packages` 安装。
+当前主要定义在：
+
+- `modules/base.nix`
+
+比如：
+- `fish`
+- `git`
+- `neovim`
+- `yazi`
+- `fd`
+- `ripgrep`
+- `nodejs`
+- `python3`
+
+如果你想新增一个命令行工具，一般做法是：
+1. 在 `modules/base.nix` 的 `home.packages` 里加包名
+2. 重新执行：
+   - `nix build ~/.config/home-manager#homeConfigurations.default.activationPackage`
+   - `nix run ~/.config/home-manager#homeConfigurations.default.activationPackage`
+3. 打开新 shell 验证 `command -v <tool>`
+
+### 2. 配置托管
+应用配置文件通过 Home Manager 的 `xdg.configFile` 或 `home.file` 托管。
+例如：
+- `~/.config/kitty` <- `files/kitty`
+- `~/.config/yazi` <- `files/yazi`
+- `~/.config/nvim` <- `files/nvim`
+- `~/.config/fish/functions` <- `files/fish/functions`
+- `~/.local/bin/*` <- `files/bin/*`
+
+也就是说：
+- 想安装软件：优先改 `modules/*.nix`
+- 想改软件配置：优先改 `files/...`
 
 ## 日常修改流程
 1. 在 `~/.config/home-manager` 中修改源码。
 2. 构建或应用：
-   - `source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh`
-   - `nix build ~/.config/home-manager#homeConfigurations.bytedance.activationPackage`
-   - `nix run ~/.config/home-manager#homeConfigurations.bytedance.activationPackage`
+   - `nix build ~/.config/home-manager#homeConfigurations.default.activationPackage`
+   - `nix run ~/.config/home-manager#homeConfigurations.default.activationPackage`
 3. 打开新的 shell 或应用会话验证修改结果。
 
 ## 当前已托管的路径映射

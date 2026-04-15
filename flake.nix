@@ -1,5 +1,5 @@
 {
-  description = "Home Manager configuration for bytedance";
+  description = "Home Manager configuration";
 
   inputs = {
     nixpkgs.url = "https://github.com/NixOS/nixpkgs/archive/nixpkgs-unstable.tar.gz";
@@ -11,13 +11,15 @@
 
   outputs = { nixpkgs, home-manager, ... }:
     let
-      system = "aarch64-darwin";
-      username = "bytedance";
+      profile = import ./profiles/default.nix;
     in {
-      homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
+      homeConfigurations.default = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
-          inherit system;
+          system = profile.system;
           config.allowUnfree = true;
+        };
+        extraSpecialArgs = {
+          inherit (profile) username homeDirectory;
         };
         modules = [ ./home.nix ];
       };

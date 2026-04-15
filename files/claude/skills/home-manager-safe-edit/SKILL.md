@@ -43,9 +43,13 @@ Current known mappings include:
 After edits:
 1. Run:
    - `source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh`
-   - `nix build ~/.config/home-manager#homeConfigurations.bytedance.activationPackage`
-   - `nix run ~/.config/home-manager#homeConfigurations.bytedance.activationPackage`
+   - `nix build ~/.config/home-manager#homeConfigurations.default.activationPackage`
+   - `nix run ~/.config/home-manager#homeConfigurations.default.activationPackage`
 2. Run app-specific smoke checks for the changed area.
+
+## Note
+- The stable flake selector is `homeConfigurations.default`.
+- The actual `home.username` and `home.homeDirectory` come from the repo-owned profile at `profiles/default.nix`.
 
 ## Validation examples
 - Fish changes: open a fresh fish shell and test aliases/functions.
