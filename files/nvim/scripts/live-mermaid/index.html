@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mermaid</title>
+  </head>
+  <body>
+    <div id="diagram">Loading diagram...</div>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+      mermaid.initialize({
+        startOnLoad: false, // 禁用自动初始化
+        theme: 'default', // 可选主题：default, forest, dark, neutral
+      });
+
+      function setContent(elem) {
+        const container = document.getElementById('diagram');
+        container.innerHTML = '';
+        container.appendChild(elem);
+      }
+
+      // 加载并渲染Mermaid文件
+      fetch('index.mmd')
+        .then((response) => {
+          if (!response.ok) throw new Error('File not found');
+          return response.text();
+        })
+        .then((mermaidCode) => {
+          const pre = document.createElement('pre');
+          pre.classList.add('mermaid');
+          pre.textContent = mermaidCode;
+
+          setContent(pre);
+
+          return mermaid.init();
+        })
+        .catch((error) => {
+          const errorP = document.createElement('p');
+          errorP.textContent = `Error: ${error.message}`;
+          setContent(errorP);
+        });
+    </script>
+  </body>
+</html>

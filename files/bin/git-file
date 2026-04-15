@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# 用于nvim中的<leader>gg，查看我最近的提交涉及的文件
+
+ignore() {
+  grep -Ev "kitex_gen|go\.mod|go\.sum" || true
+}
+
+show_files() {
+  local sha="$1"
+  git --no-pager diff-tree --name-status "$sha" --pretty="" -r --no-renames --diff-filter=d --ignore-blank-lines | ignore | while IFS= read -r line; do
+    echo "${sha:0:8} $line"
+  done
+}
+
+git --no-pager status --porcelain=v1 -uall | ignore | while IFS= read -r line; do
+  echo "uncommit $line"
+done
+
+(
+  git --no-pager log -10 --perl-regexp --author='yangrui|urie|杨锐' --format=format:%H --no-merges
+  echo # git log 末尾无换行符导致read不到最后一行，手动echo添加换行符
+) | while read -r line; do
+  if [ -n "$line" ]; then
+    show_files "$line"
+  fi
+done

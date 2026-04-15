@@ -1,0 +1,267 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+LANGUAGE=""
+FORMATTER=""
+NAME=""
+
+# 格式化标准输入
+fmt_stdin() {
+  case "$LANGUAGE" in
+  nix)
+    nixfmt
+    ;;
+  bash | sh | shellscript | zsh)
+    shfmt -i 2 -
+    ;;
+  fish)
+    fish_indent
+    ;;
+  sql)
+    sqlfluff format --dialect=ansi -
+    ;;
+  toml)
+    taplo fmt --option inline_table_expand=false --option align_entries=true --option indent_tables=true -
+    ;;
+  go)
+    gofumpt
+    ;;
+  py | python | ipynb)
+    ruff format --stdin-filename "$NAME" -
+    ;;
+  nginx | conf)
+    nginxfmt -i 2 -
+    ;;
+  d2)
+    d2 fmt -
+    ;;
+  java)
+    google-java-format -
+    ;;
+  lua)
+    stylua --indent-type Spaces --indent-width 2 --quote-style AutoPreferSingle --line-endings Unix --call-parentheses None --column-width 120 --collapse-simple-statement Always -
+    ;;
+  rs | rust)
+    rustfmt --edition 2018
+    ;;
+  thrift)
+    local tmp_path
+    tmp_path=$(mktemp -t tmp.XXXXXXXXXX.thrift)
+    cat >"$tmp_path"
+    thrift-fmt -i 2 --no-patch "$tmp_path"
+    rm -f "$tmp_path"
+    ;;
+  just)
+    local tmp_path
+    tmp_path=$(mktemp -t tmp.XXXXXXXXXX)
+    cat >"$tmp_path"
+    just --dump -f "$tmp_path"
+    rm -f "$tmp_path"
+    ;;
+  swift)
+    swiftformat --output stdout --quiet
+    ;;
+  json)
+    biome format --stdin-file-path a.jsonc --indent-style space
+    ;;
+  jsonc | js | ts | jsx | tsx | mjs | mts | typescriptreact | javascriptreact | typescript | javascript | css)
+    biome format --stdin-file-path "$NAME" --indent-style space
+    ;;
+  http)
+    kulala-fmt format --stdin
+    ;;
+  vue | scss | less | html | yaml | yml)
+    prettierd "$NAME"
+    ;;
+  md | markdown)
+    prettierd "$NAME"
+    ;;
+  proto)
+    local tmp_path
+    tmp_path="${RANDOM}.proto"
+    cat >"$tmp_path"
+    buf format "$tmp_path"
+    rm -f "$tmp_path"
+    ;;
+  c | cc | h | hpp | cpp | hh | arduino | ino)
+    # clang-format "--assume-filename=$NAME" "-style=file:${CLANG_FORMAT_CONFIG}" --Wno-error=unknown
+    clang-format "--assume-filename=$NAME" --Wno-error=unknown
+    ;;
+  gowork)
+    local tmp_path
+    tmp_path=$(mktemp -t tmp.XXXXXXXXXX.work)
+    cat >"$tmp_path"
+    go work edit -fmt "$tmp_path"
+    cat "$tmp_path"
+    rm -f "$tmp_path"
+    ;;
+  ini)
+    python -c "import sys, configparser; c=configparser.ConfigParser(); c.read_string(sys.stdin.read()); c.write(sys.stdout)" "$NAME"
+    ;;
+  *)
+    echo "no formatter for $LANGUAGE" >&2
+    exit 1
+    ;;
+  esac
+}
+
+# 处理指定格式化器
+handle_specify_formatter() {
+  case "$FORMATTER" in
+  golines)
+    {
+      local origin
+      origin=$(cat)
+      local has_defined_package
+      local has_defined_func
+
+      if echo "$origin" | grep -q -E '(^|\n)package'; then
+        has_defined_package=true
+      else
+        has_defined_package=false
+      fi
+
+      if echo "$origin" | grep -q -E '(^|\n)func'; then
+        has_defined_func=true
+      else
+        has_defined_func=false
+      fi
+
+      if [ "$has_defined_func" = "false" ]; then
+        {
+          echo "package __tmp_package"
+          echo "func __tmp_func() {"
+          echo "$origin"
+          echo "}"
+        } | golines --base-formatter=gofmt | tail -n +4 | head -n -1
+      elif [ "$has_defined_package" = "false" ]; then
+        {
+          echo "package __tmp_package"
+          echo "$origin"
+        } | golines --base-formatter=gofmt | tail -n +3
+      else
+        echo "$origin" | golines --base-formatter=gofmt
+      fi
+    }
+    ;;
+  *)
+    echo "formatter $FORMATTER not config" >&2
+    exit 1
+    ;;
+  esac
+}
+
+# 构建上下文
+fix_lang() {
+  if [ -z "$LANGUAGE" ]; then
+    local ext
+    if [ -n "$NAME" ]; then
+      ext=$(echo "$NAME" | awk -F. '{print tolower($NF)}')
+      if [ -n "$ext" ] && [ "$ext" != "$NAME" ]; then
+        LANGUAGE="$ext"
+      else
+        read -r first_line <"$NAME"
+        case "$first_line" in
+        *bash*)
+          LANGUAGE="bash"
+          ;;
+        *fish*)
+          LANGUAGE="fish"
+          ;;
+        *node*)
+          LANGUAGE="node"
+          ;;
+        *python*)
+          LANGUAGE="python"
+          ;;
+        *sh*)
+          LANGUAGE="sh"
+          ;;
+        *)
+          echo "unable to detect language" >&2
+          exit 1
+          ;;
+        esac
+      fi
+    else
+      echo "unable to detect language" >&2
+      exit 1
+    fi
+  fi
+
+  if [ -z "$NAME" ]; then
+    case "$LANGUAGE" in
+    javascript)
+      NAME="_stdin_file.js"
+      ;;
+    typescript)
+      NAME="_stdin_file.typescript"
+      ;;
+    markdown)
+      NAME="_stdin_file.md"
+      ;;
+    python)
+      NAME="_stdin_file.py"
+      ;;
+    golang)
+      NAME="_stdin_file.go"
+      ;;
+    rust)
+      NAME="_stdin_file.rs"
+      ;;
+    typescriptreact)
+      NAME="_stdin_file.tsx"
+      ;;
+    javascriptreact)
+      NAME="_stdin_file.jsx"
+      ;;
+    arduino)
+      NAME="_stdin_file.ino"
+      ;;
+    *)
+      NAME="_stdin_file.$LANGUAGE"
+      ;;
+    esac
+  fi
+}
+
+main() {
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    -l | --lang)
+      LANGUAGE="$2"
+      shift 2
+      ;;
+    -f | --formatter)
+      FORMATTER="$2"
+      shift 2
+      ;;
+    -n | --name)
+      NAME="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      exit 1
+      ;;
+    esac
+  done
+
+  if [ -z "$LANGUAGE" ] && [ -z "$NAME" ] && [ -z "$FORMATTER" ]; then
+    echo "missing --lang and --name" >&2
+    exit 1
+  fi
+
+  if [ -n "$FORMATTER" ]; then
+    handle_specify_formatter
+    exit
+  fi
+
+  fix_lang
+  fmt_stdin
+}
+
+# 如果脚本被直接执行，调用主函数
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main "$@"
+fi

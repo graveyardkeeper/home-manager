@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+FILE_PATH="$1"
+DIR_PATH="$(dirname "$FILE_PATH")"
+FILE_NAME="$(basename "$FILE_PATH")"
+if [[ "$FILE_NAME" == *.* ]]; then
+  FILE_EXTENSION="$(echo "${FILE_NAME##*.}" | awk -F. '{print tolower($NF)}')"
+else
+  read -r first_line <"$FILE_PATH"
+  case "$first_line" in
+  *bash*)
+    FILE_EXTENSION="sh"
+    ;;
+  *fish*)
+    FILE_EXTENSION="fish"
+    ;;
+  *node*)
+    FILE_EXTENSION="node"
+    ;;
+  *python*)
+    FILE_EXTENSION="py"
+    ;;
+  *sh*)
+    FILE_EXTENSION="sh"
+    ;;
+  *)
+    echo "unable to detect language" >&2
+    exit 1
+    ;;
+  esac
+fi
+
+cd "$DIR_PATH"
+
+exist_command() {
+  command "$1" &>/dev/null
+}
+
+case "$FILE_EXTENSION" in
+lua)
+  lua "$FILE_PATH"
+  ;;
+js)
+  if exist_command node; then
+    node "$FILE_PATH"
+  elif exist_command bun; then
+    bun "$FILE_PATH"
+  elif exist_command deno; then
+    deno "$FILE_PATH"
+  fi
+  ;;
+go)
+  go mod tidy
+  go run .
+  ;;
+py)
+  python3 "$FILE_PATH"
+  ;;
+sh)
+  bash "$FILE_PATH"
+  ;;
+*)
+  echo "unknown ext: '$FILE_EXTENSION'" >&2
+  exit 1
+  ;;
+esac

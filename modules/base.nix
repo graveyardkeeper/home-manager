@@ -1,0 +1,44 @@
+{ config, pkgs, ... }:
+
+{
+  home.sessionVariables = {
+    EDITOR = "nvim";
+    GOPATH = "${config.home.homeDirectory}/workspace/go";
+    GOSUMDB = "sum.golang.google.cn";
+    GOPRIVATE = "*.byted.org,*.everphoto.cn,git.smartisan.com";
+    GOPROXY = "https://goproxy.byted.org|https://goproxy.cn|direct";
+  };
+
+  home.sessionPath = [
+    "/opt/homebrew/bin"
+    "${config.home.homeDirectory}/bin"
+    "/usr/local/bin"
+    "${config.home.homeDirectory}/workspace/go/bin"
+    "${config.home.homeDirectory}/workspace/go/bin/darwin_amd64"
+    "/opt/homebrew/opt/thrift@0.9/bin"
+    "/usr/local/apache-maven-3.9.2/bin"
+    "${config.home.homeDirectory}/.local/bin"
+  ];
+
+  home.packages = with pkgs; [
+    delta
+    fd
+    fish
+    fzf
+    git
+    gofumpt
+    hadolint
+    jq
+    just
+    markdownlint-cli
+    mpv
+    neovim
+    nodejs
+    python3
+    ripgrep
+    sqlfluff
+    yazi
+    zoxide
+    zk
+  ];
+}

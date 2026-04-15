@@ -1,0 +1,79 @@
+[mgr]
+syntect_theme = "~/.config/tmTheme/dracula.tmTheme"
+
+  [mgr.border_style]
+  fg = "darkgray"
+
+  [mgr.preview_hovered]
+
+
+[[filetype.rules]]
+fg   = "cyan"
+mime = "image/*"
+
+[[filetype.rules]]
+fg   = "yellow"
+mime = "{audio,video}/*"
+
+[[filetype.rules]]
+fg   = "magenta"
+mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}"
+
+[[filetype.rules]]
+fg   = "green"
+mime = "application/{pdf,doc,rtf}"
+
+[[filetype.rules]]
+fg   = "gray"
+mime = "vfs/{absent,stale}"
+
+[[filetype.rules]]
+bg   = "red"
+bold = true
+is   = "orphan"
+url  = "*"
+
+[[filetype.rules]]
+bold = true
+fg   = "cyan"
+is   = "link"
+url  = "*"
+
+[[filetype.rules]]
+bold = true
+fg   = "yellow"
+is   = "block"
+url  = "*"
+
+[[filetype.rules]]
+bold = true
+fg   = "yellow"
+is   = "char"
+url  = "*"
+
+[[filetype.rules]]
+bold = true
+fg   = "magenta"
+is   = "sock"
+url  = "*"
+
+[[filetype.rules]]
+bold = true
+fg   = "green"
+is   = "exec"
+url  = "*"
+
+[[filetype.rules]]
+bg  = "red"
+is  = "dummy"
+url = "*"
+
+[[filetype.rules]]
+bg  = "red"
+is  = "dummy"
+url = "*/"
+
+[[filetype.rules]]
+fg  = "blue"
+url = "*/"
+

@@ -1,0 +1,56 @@
+[mgr]
+ratio        = [1, 3, 4]
+sort_by      = "mtime"
+sort_reverse = true
+# linemode 可选值: none, size, btime, mtime, ctime, permissions, owner, git, custom
+linemode     = "none"
+
+[[open.rules]]
+mime = "vfs/{absent,stale}"
+use  = "download"
+
+[[open.rules]]
+url = "*/"
+use = "my-opener"
+
+[[open.rules]]
+url = "*"
+use = "my-opener"
+
+[[opener.my-opener]]
+block = true
+desc  = "Open"
+run   = "open-file %s"
+
+[plugin]
+preloaders = []
+
+  [[plugin.append_previewers]]
+  run = "piper -- preview --path \"$1\" --width $w --height $h"
+  url = "*"
+
+  [[plugin.prepend_fetchers]]
+  id   = "mime"
+  prio = "high"
+  run  = "mime-ext.local"
+  url  = "local://*"
+
+  [[plugin.prepend_fetchers]]
+  id   = "mime"
+  prio = "high"
+  run  = "mime-ext.remote"
+  url  = "remote://*"
+
+  [[plugin.prepend_fetchers]]
+  id   = "git"
+  url = "*"
+  run  = "git"
+
+  [[plugin.prepend_fetchers]]
+  id   = "git"
+  url = "*/"
+  run  = "git"
+
+[preview]
+max_height = 1000
+max_width  = 1000

@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+declare -A command_map=(
+  ["JSON Format"]="cb paste | jq . | tree_json"
+  ["JSON Minify"]="cb paste | jq -c . | show_code json"
+  ["Stringify"]="cb paste | jq -Rs . | show_code json"
+  ["Unstringify"]="cb paste | jq -r . | show_code json"
+  ["Paste JSON To Neovim"]="paste_json_to_neovim"
+  ["Paste To Neovim"]="cb paste | nvim -"
+  ["Generate QR Code"]="gen_qrcode"
+  ["Unix Timestamp To Date"]="unix_timestamp_to_date"
+  ["Translate"]="cb paste | translate"
+  ["Convert JSON To Nix"]="convert_to_nix json"
+  ["Convert YAML To Nix"]="convert_to_nix yaml"
+  ["Convert TOML To Nix"]="convert_to_nix toml"
+  ["Convert Curl To HTTP"]="convert_curl_to http"
+  ["Base64 Decode"]="cb paste | base64 -d | show_code"
+  ["Base64 Encode"]="cb paste | base64 | tr -d '\n' | show_code"
+  ["URL Encode"]="url_encode"
+  ["URL Decode"]="url_decode"
+)
+
+paste_json_to_neovim() {
+  local tmp
+  tmp="$(mktemp --suffix=.json)"
+  cb paste >"$tmp"
+  nvim "$tmp"
+}
+
+url_encode() {
+  cb paste | python3 -c "import sys; from urllib.parse import quote; print(quote(sys.stdin.read(), safe=\"\"));" | show_code
+}
+
+url_decode() {
+  cb paste | python3 -c "import sys; from urllib.parse import unquote; print(unquote(sys.stdin.read()));" | show_code
+}
+
+convert_curl_to() {
+  dest=$1
+  convert() {
+    case "$dest" in
+    js)
+      curlconverter --language javascript -
+      ;;
+    py)
+      curlconverter --language python-http -
+      ;;
+    *)
+      curlconverter --language "$dest" -
+      ;;
+    esac
+  }
+  cb paste | convert | show_code http
+}
+
+unix_timestamp_to_date() {
+  unixTime="$(cb paste)"
+  length=${#unixTime}
+
+  if [[ $length == "13" ]]; then
+    unixTime=$((unixTime / 1000))
+  elif [[ $length != "10" ]]; then
+    echo "Unix Time is not found"
+    exit 1
+  fi
+  readable="$(date -d "@$unixTime" "+%F %T")"
+
+  current_time=$(date +%s)
+  time_since=$((unixTime - current_time))
+  if [ $time_since -lt 0 ]; then
+    suffix="前"
+    time_since=$((0 - time_since))
+  else
+    suffix="后"
+  fi
+
+  secs=$time_since
+  mins=$((secs / 60))
+  hours=$((mins / 60))
+  days=$((hours / 24))
+  months=$((days / 30))
+  years=$((days / 365))
+
+  since=""
+  if [ $years -gt 0 ]; then
+    since="${years} 年"
+  elif [ $months -gt 0 ]; then
+    since="${months} 月"
+  elif [ $days -gt 0 ]; then
+    since="${days} 天"
+  elif [ $hours -gt 0 ]; then
+    since="${hours} 小时"
+  elif [ $mins -gt 0 ]; then
+    since="${mins} 分钟"
+  else
+    since="${secs} 秒"
+  fi
+
+  echo "$readable ($since$suffix)"
+  wait_key
+}
+
+convert_to_nix() {
+  if [[ -z "$1" ]]; then
+    exit
+  fi
+
+  tmp="$(mktemp)"
+  case "$1" in
+  json)
+    cb paste >"$tmp"
+    ;;
+  yaml)
+    cb paste | yq -o=json . >"$tmp"
+    ;;
+  toml)
+    cb paste | yq -p toml -o=json . >"$tmp"
+    ;;
+  *)
+    echo "$FROM_LANG not supported"
+    exit 1
+    ;;
+  esac
+
+  nix eval --impure --expr "builtins.fromJSON (builtins.readFile $tmp)" | fmt-file -l nix | show_code nix
+  rm "$tmp"
+}
+
+tree_json() {
+  local tmp
+  tmp="$(mktemp --suffix=.json)"
+  cat >"$tmp"
+  keywrap --bind "ctrl-e:become(nvim '$tmp')" --bind "c:execute(cb copy < '$tmp')" -- fx "$tmp"
+  rm "$tmp"
+}
+
+wait_key() {
+  read -r -s -n 1
+}
+
+copy_qrcode_to_clipboard() {
+  set -e
+  local tmp
+  tmp="$(mktemp --suffix=.png)"
+  qrencode -o "$tmp" "$1"
+  osascript -e "set the clipboard to (read (POSIX file \"$tmp\") as «class PNGf»)"
+  rm "$tmp"
+  echo "Copied to clipboard"
+}
+
+gen_qrcode() {
+  export QRCODE_TEXT
+  QRCODE_TEXT="$(cb paste)"
+  export -f copy_qrcode_to_clipboard
+  # shellcheck disable=SC2016
+  keywrap -h --bind 'c:execute(copy_qrcode_to_clipboard "${QRCODE_TEXT}")' -- qrencode -t ANSIUTF8 "$QRCODE_TEXT"
+}
+
+show_code() {
+  local lang="${1:-}"
+  local tmp
+  local preview_cmd=""
+  if [[ -n "$lang" ]]; then
+    tmp="$(mktemp --suffix=."${lang}")"
+  else
+    tmp="$(mktemp)"
+  fi
+  preview_cmd=(bat --color=always --paging=always --style=plain "$tmp")
+  cat >"$tmp"
+  keywrap --bind "ctrl-e:become(nvim '$tmp')" --bind "c:execute(cb copy < '$tmp')" -- "${preview_cmd[@]}"
+  rm "$tmp"
+}
+
+main() {
+  clear
+  selected=$(printf '%s\n' "${!command_map[@]}" | fzf --prompt="> ")
+
+  if [[ -n "$selected" ]]; then
+    eval "${command_map[$selected]}"
+  fi
+}
+
+if [[ "${1:-}" == "--loop" ]]; then
+  while true; do
+    main || true
+  done
+else
+  main
+fi

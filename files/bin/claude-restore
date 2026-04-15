@@ -1,0 +1,4 @@
+#!/bin/bash
+# 恢复原始 claude 命令
+echo "用户级安装不需要恢复"
+echo "如需卸载，请删除: ~/.local/bin/claude"
