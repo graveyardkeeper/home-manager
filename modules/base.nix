@@ -10,14 +10,13 @@
   };
 
   home.sessionPath = [
+    "/usr/local/bin"
     "/opt/homebrew/bin"
     "${config.home.homeDirectory}/bin"
-    "/usr/local/bin"
+    "${config.home.homeDirectory}/.local/bin"
+    "/usr/local/go/bin"
     "${config.home.homeDirectory}/workspace/go/bin"
     "${config.home.homeDirectory}/workspace/go/bin/darwin_amd64"
-    "/opt/homebrew/opt/thrift@0.9/bin"
-    "/usr/local/apache-maven-3.9.2/bin"
-    "${config.home.homeDirectory}/.local/bin"
   ];
 
   home.packages = with pkgs; [
