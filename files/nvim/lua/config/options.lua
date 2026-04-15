@@ -35,6 +35,7 @@ end)
 opt.breakindent = true -- Enable break indent
 opt.undofile = true -- Save undo history
 opt.grepprg = 'rg --vimgrep'
+opt.shell = 'fish'
 
 opt.wildmode = 'longest:full,full' -- Command-line completion mode
 

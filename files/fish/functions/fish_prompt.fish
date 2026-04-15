@@ -20,8 +20,16 @@ function fish_prompt
             set job_indicator (set_color brcyan)"[$job_count]" (set_color normal)
         end
 
-        printf '[%s] %s%s@%s %s%s %s%s%s%s \n> ' (date "+%H:%M:%S") (set_color brblue) \
-            $USER (prompt_hostname) (set_color $fish_color_cwd) $PWD $pipestatus_string \
+        set -l git_branch ""
+        if git rev-parse --is-inside-work-tree >/dev/null 2>/dev/null
+            set -l current_branch (git branch --show-current 2>/dev/null)
+            if test -n "$current_branch"
+                set git_branch " "(set_color bryellow)"[$current_branch]"(set_color normal)
+            end
+        end
+
+        printf '[%s] %s%s@%s %s%s%s %s%s%s%s \n> ' (date "+%H:%M:%S") (set_color brblue) \
+            $USER (prompt_hostname) (set_color $fish_color_cwd) $PWD $git_branch $pipestatus_string \
             $job_indicator (set_color normal)
     end
 end

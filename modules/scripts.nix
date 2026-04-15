@@ -12,4 +12,5 @@
   home.file.".local/bin/rsync-tool".source = ../files/bin/rsync-tool;
   home.file.".local/bin/t".source = ../files/bin/t;
   home.file.".local/bin/slim-kitten".source = ../files/bin/slim-kitten;
+  home.file.".claude/skills/home-manager-safe-edit/SKILL.md".source = ../files/claude/skills/home-manager-safe-edit/SKILL.md;
 }
