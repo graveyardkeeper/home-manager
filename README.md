@@ -14,7 +14,7 @@
 - `home.nix`：模块聚合入口
 - `modules/`：Home Manager 模块声明
 - `files/`：被托管出去的配置内容和脚本
-- `HOME_MANAGER_REFERENCE.md`：仓库内操作参考文档
+- `README.md`：仓库内操作参考文档
 
 ## 新机器初始化
 ### 1. 安装 Nix

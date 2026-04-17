@@ -14,7 +14,7 @@ Use this skill when changing terminal, editor, Yazi, Fish, Kitty, helper script,
 - Prefer editing:
   - `modules/*.nix` for declarations
   - `files/...` for managed config payloads
-- Use `~/.config/home-manager/HOME_MANAGER_REFERENCE.md` as the repo-local workflow reference; do not expect a managed SOP file in `$HOME`.
+- Use `~/.config/home-manager/README.md` as the repo-local workflow reference; do not expect a managed SOP file in `$HOME`.
 
 ## Path mapping
 Current known mappings include:
