@@ -95,7 +95,7 @@ fish -ic 'command -v nix; nix --version'
 如果你想新增一个命令行工具，一般做法是：
 1. 在 `modules/base.nix` 的 `home.packages` 里加包名
 2. 重新执行：
-   - `nix build ~/.config/home-manager#homeConfigurations.default.activationPackage`
+   - `nix build --no-link ~/.config/home-manager#homeConfigurations.default.activationPackage`
    - `nix run ~/.config/home-manager#homeConfigurations.default.activationPackage`
 3. 打开新 shell 验证 `command -v <tool>`
 
@@ -115,8 +115,9 @@ fish -ic 'command -v nix; nix --version'
 ## 日常修改流程
 1. 在 `~/.config/home-manager` 中修改源码。
 2. 构建或应用：
-   - `nix build ~/.config/home-manager#homeConfigurations.default.activationPackage`
+   - `nix build --no-link ~/.config/home-manager#homeConfigurations.default.activationPackage`
    - `nix run ~/.config/home-manager#homeConfigurations.default.activationPackage`
+   - 其中 `--no-link` 用来避免在当前目录生成 `result` 软链。
 3. 打开新的 shell 或应用会话验证修改结果。
 
 ## 当前已托管的路径映射

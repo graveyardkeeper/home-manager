@@ -43,7 +43,7 @@ Current known mappings include:
 After edits:
 1. Run:
    - `source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh`
-   - `nix build ~/.config/home-manager#homeConfigurations.default.activationPackage`
+   - `nix build --no-link ~/.config/home-manager#homeConfigurations.default.activationPackage`
    - `nix run ~/.config/home-manager#homeConfigurations.default.activationPackage`
 2. Run app-specific smoke checks for the changed area.
 

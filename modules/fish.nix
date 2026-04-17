@@ -12,6 +12,7 @@
       if test -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.fish
         source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.fish
       end
+      set -gx SHELL (command -s fish)
       if status is-interactive
       end
     '';
