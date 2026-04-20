@@ -20,6 +20,7 @@
   ];
 
   home.packages = with pkgs; [
+    # hm-packages:start
     delta
     fd
     fish
@@ -37,7 +38,8 @@
     ripgrep
     sqlfluff
     yazi
-    zoxide
     zk
+    zoxide
+    # hm-packages:end
   ];
 }

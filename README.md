@@ -93,11 +93,15 @@ fish -ic 'command -v nix; nix --version'
 - `python3`
 
 如果你想新增一个命令行工具，一般做法是：
-1. 在 `modules/base.nix` 的 `home.packages` 里加包名
-2. 重新执行：
-   - `nix build --no-link ~/.config/home-manager#homeConfigurations.default.activationPackage`
-   - `nix run ~/.config/home-manager#homeConfigurations.default.activationPackage`
-3. 打开新 shell 验证 `command -v <tool>`
+1. 在 repo 根目录执行：
+   - `just install <pkg>`
+   - `just check`
+   - `just rebuild`
+2. 打开新 shell 验证 `command -v <tool>`
+3. 如果要删除软件包，则执行：
+   - `just uninstall <pkg>`
+   - `just check`
+   - `just rebuild`
 
 ### 2. 配置托管
 应用配置文件通过 Home Manager 的 `xdg.configFile` 或 `home.file` 托管。
@@ -114,11 +118,18 @@ fish -ic 'command -v nix; nix --version'
 
 ## 日常修改流程
 1. 在 `~/.config/home-manager` 中修改源码。
-2. 构建或应用：
+2. 优先使用 repo 根目录下的 `justfile`：
+   - `just build`
+   - `just apply`
+   - `just rebuild`
+   - `just check`
+   - `just show`
+   - `just verify`
+3. 对应的底层命令仍然是：
    - `nix build --no-link ~/.config/home-manager#homeConfigurations.default.activationPackage`
    - `nix run ~/.config/home-manager#homeConfigurations.default.activationPackage`
    - 其中 `--no-link` 用来避免在当前目录生成 `result` 软链。
-3. 打开新的 shell 或应用会话验证修改结果。
+4. 打开新的 shell 或应用会话验证修改结果。
 
 ## 当前已托管的路径映射
 - `~/.config/kitty` <- `files/kitty`

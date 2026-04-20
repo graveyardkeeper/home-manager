@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE_NIX="${HOME}/.config/home-manager/modules/base.nix"
+START_MARKER="    # hm-packages:start"
+END_MARKER="    # hm-packages:end"
+PACKAGE_PATTERN='^[A-Za-z0-9._+-]+$'
+
+usage() {
+  cat <<'EOF'
+Usage:
+  hm-packages list
+  hm-packages install <package>
+  hm-packages uninstall <package>
+EOF
+}
+
+die() {
+  echo "$*" >&2
+  exit 1
+}
+
+require_file() {
+  [[ -f "$BASE_NIX" ]] || die "base.nix not found at $BASE_NIX"
+}
+
+validate_package() {
+  local pkg="$1"
+  [[ "$pkg" =~ $PACKAGE_PATTERN ]] || die "unsupported package name: $pkg"
+}
+
+rewrite_packages() {
+  local action="$1"
+  local pkg="${2:-}"
+
+  python3 - "$BASE_NIX" "$START_MARKER" "$END_MARKER" "$action" "$pkg" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+base_nix = Path(sys.argv[1])
+start_marker = sys.argv[2]
+end_marker = sys.argv[3]
+action = sys.argv[4]
+pkg = sys.argv[5] if len(sys.argv) > 5 else ""
+
+lines = base_nix.read_text().splitlines()
+start_indexes = [i for i, line in enumerate(lines) if line == start_marker]
+end_indexes = [i for i, line in enumerate(lines) if line == end_marker]
+
+if len(start_indexes) != 1 or len(end_indexes) != 1:
+    raise SystemExit("expected exactly one managed package block")
+
+start = start_indexes[0]
+end = end_indexes[0]
+if end <= start:
+    raise SystemExit("invalid managed package block ordering")
+
+entries = [line.strip() for line in lines[start + 1:end] if line.strip()]
+if any(line.startswith("#") for line in entries):
+    raise SystemExit("managed package block must contain package names only")
+
+indent = "    "
+packages = sorted(entries)
+
+if action == "list":
+    for item in packages:
+        print(item)
+    raise SystemExit(0)
+
+if not re.fullmatch(r"[A-Za-z0-9._+-]+", pkg):
+    raise SystemExit(f"unsupported package name: {pkg}")
+
+existing = set(packages)
+changed = False
+
+if action == "install":
+    if pkg not in existing:
+        packages.append(pkg)
+        packages.sort()
+        changed = True
+elif action == "uninstall":
+    if pkg in existing:
+        packages = [item for item in packages if item != pkg]
+        changed = True
+else:
+    raise SystemExit(f"unknown action: {action}")
+
+if not changed:
+    print("no-change")
+    raise SystemExit(0)
+
+new_lines = lines[: start + 1] + [f"{indent}{item}" for item in packages] + lines[end:]
+base_nix.write_text("\n".join(new_lines) + "\n")
+print("changed")
+PY
+}
+
+main() {
+  require_file
+
+  local action="${1:-}"
+  case "$action" in
+    list)
+      [[ $# -eq 1 ]] || die "list does not take arguments"
+      rewrite_packages list
+      ;;
+    install)
+      [[ $# -eq 2 ]] || die "install requires exactly one package"
+      validate_package "$2"
+      case "$(rewrite_packages install "$2")" in
+        changed)
+          echo "added package: $2"
+          echo "next: just check"
+          echo "next: just rebuild"
+          ;;
+        no-change)
+          echo "package already present: $2"
+          ;;
+      esac
+      ;;
+    uninstall)
+      [[ $# -eq 2 ]] || die "uninstall requires exactly one package"
+      validate_package "$2"
+      case "$(rewrite_packages uninstall "$2")" in
+        changed)
+          echo "removed package: $2"
+          echo "next: just check"
+          echo "next: just rebuild"
+          ;;
+        no-change)
+          echo "package not found: $2"
+          ;;
+      esac
+      ;;
+    -h|--help|help|"")
+      usage
+      ;;
+    *)
+      usage
+      die "unknown command: $action"
+      ;;
+  esac
+}
+
+main "$@"
