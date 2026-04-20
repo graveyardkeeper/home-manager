@@ -34,6 +34,7 @@
     mpv
     neovim
     nodejs
+    prettierd
     python3
     ripgrep
     sqlfluff
