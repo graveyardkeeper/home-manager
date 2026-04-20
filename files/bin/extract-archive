@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ $# -eq 0 ]; then
+  echo "missing archive"
+  exit 1
+fi
+
+move_contents() {
+  src=$1
+  dest=$2
+  rsync -a "$src"/ "$dest"/
+}
+
+archives=()
+for archive in "$@"; do
+  [ -n "$archive" ] || continue
+  skip=0
+  if [ ${#archives[@]} -gt 0 ]; then
+    for existing in "${archives[@]}"; do
+      if [ "$existing" = "$archive" ]; then
+        skip=1
+        break
+      fi
+    done
+  fi
+  if [ $skip -eq 0 ]; then
+    archives+=("$archive")
+  fi
+done
+
+for archive in "${archives[@]}"; do
+  name=$(basename "$archive")
+
+  case "$name" in
+    *.tar.gz) target=${name%.tar.gz} ;;
+    *.tgz) target=${name%.tgz} ;;
+    *.tar.xz) target=${name%.tar.xz} ;;
+    *.txz) target=${name%.txz} ;;
+    *.tar.bz2) target=${name%.tar.bz2} ;;
+    *.tbz2) target=${name%.tbz2} ;;
+    *.tar) target=${name%.tar} ;;
+    *.zip) target=${name%.zip} ;;
+    *)
+      printf 'Unsupported archive: %s\n' "$archive"
+      continue
+      ;;
+  esac
+
+  temp_dir=$(mktemp -d)
+  case "$name" in
+    *.tar.gz|*.tgz) tar -xzf "$archive" -C "$temp_dir" ;;
+    *.tar.xz|*.txz) tar -xJf "$archive" -C "$temp_dir" ;;
+    *.tar.bz2|*.tbz2) tar -xjf "$archive" -C "$temp_dir" ;;
+    *.tar) tar -xf "$archive" -C "$temp_dir" ;;
+    *.zip) unzip -o "$archive" -d "$temp_dir" >/dev/null ;;
+  esac
+
+  mkdir -p "$target"
+
+  shopt -s nullglob dotglob
+  entries=("$temp_dir"/*)
+  if [ ${#entries[@]} -eq 1 ] && [ -d "${entries[0]}" ] && [ "$(basename "${entries[0]}")" = "$target" ]; then
+    move_contents "${entries[0]}" "$target"
+    rmdir "${entries[0]}" 2>/dev/null || true
+  else
+    move_contents "$temp_dir" "$target"
+  fi
+  shopt -u nullglob dotglob
+
+  rmdir "$temp_dir" 2>/dev/null || true
+done
