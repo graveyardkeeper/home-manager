@@ -162,7 +162,11 @@ map { '<C-tab>q', '<cmd>tabclose<cr>', desc = 'Close Tab' }
 -- pickers
 -- map { '<D-p>', function() Snacks.picker.files() end, desc = 'Find Files' }
 map { '<D-p>', function() Snacks.picker.smart { filter = { cwd = true } } end, desc = 'Find Files' }
-map { '<leader>lg', function() Snacks.lazygit { cwd = vim.fn.expand '%:h' } end, desc = 'Lazygit' }
+map {
+  '<leader>lg',
+  function() Snacks.lazygit.open { cwd = vim.fn.expand '%:h', count = vim.uv.hrtime() } end,
+  desc = 'Lazygit',
+}
 map { '<leader>gf', function() Snacks.picker.git_log_file() end, desc = 'Current File Git History' }
 map { '<leader>sd', function() Snacks.picker.diagnostics() end, desc = 'Workspace diagnostics' }
 map { '<leader>sb', function() Snacks.picker.lines() end, desc = 'Buffer Lines' }

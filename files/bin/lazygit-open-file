@@ -12,15 +12,12 @@ line=$(
 
 if command -v nvr >/dev/null 2>&1 && [[ -n ${NVIM:-} ]]; then
   target=$(realpath "$file")
-  if [[ -n ${PPID:-} ]]; then
-    kill -TERM "$PPID" 2>/dev/null || true
-  fi
 
   if [[ -n ${line:-} ]]; then
     exec nvr -cc 'close' -c "silent edit +${line} $(printf '%q' "$target")" --remote-silent
   fi
 
-  exec nvr -cc "close" -c "silent edit $(printf '%q' "$target")" --remote-silent
+  exec nvr -cc 'close' -c "silent edit $(printf '%q' "$target")" --remote-silent
 fi
 
 if [[ -n ${line:-} ]]; then
