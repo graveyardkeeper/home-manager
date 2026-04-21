@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+path=${1:-$PWD}
+
+if [ -f "$path" ]; then
+  path=$(dirname "$path")
+fi
+
+path=$(realpath "$path")
+
+is_repo_root() {
+  local dir=$1
+
+  [ -e "$dir/.git" ]
+}
+
+is_workspace_root() {
+  local dir=$1
+
+  [ -e "$dir/pnpm-workspace.yaml" ] \
+    || [ -e "$dir/turbo.json" ] \
+    || [ -e "$dir/nx.json" ]
+}
+
+is_project_root() {
+  local dir=$1
+
+  [ -e "$dir/go.mod" ] \
+    || [ -e "$dir/Cargo.toml" ] \
+    || [ -e "$dir/package.json" ] \
+    || [ -e "$dir/pyproject.toml" ] \
+    || [ -e "$dir/Makefile" ] \
+    || [ -e "$dir/makefile" ] \
+    || [ -e "$dir/justfile" ] \
+    || [ -e "$dir/Justfile" ] \
+    || [ -e "$dir/build.gradle" ] \
+    || [ -e "$dir/build.gradle.kts" ] \
+    || [ -e "$dir/pom.xml" ]
+}
+
+fallback=
+current=$path
+while :; do
+  if is_repo_root "$current" || is_workspace_root "$current"; then
+    printf '%s\n' "$current"
+    exit 0
+  fi
+
+  if [ -z "$fallback" ] && is_project_root "$current"; then
+    fallback=$current
+  fi
+
+  if [ "$current" = "/" ]; then
+    break
+  fi
+
+  current=$(dirname "$current")
+done
+
+if [ -n "$fallback" ]; then
+  printf '%s\n' "$fallback"
+  exit 0
+fi
+
+printf '%s\n' "$path"
