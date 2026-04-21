@@ -1,0 +1,9 @@
+keybinding:
+  universal:
+    edit: "<disabled>"
+
+customCommands:
+  - key: e
+    context: files
+    command: lazygit-open-file {{.SelectedFile.Name | quote}}
+    output: terminal

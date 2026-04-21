@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# 按文件类型运行脚本或源码文件。
+
 set -euo pipefail
 
 FILE_PATH="$1"

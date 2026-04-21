@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# 将常见压缩包解压到同名目录。
+
 set -euo pipefail
 
 if [ $# -eq 0 ]; then

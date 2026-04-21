@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# 交互式选择并执行本地与远端的 rsync 同步。
+
 set -euo pipefail
 
 function wait_confirm {

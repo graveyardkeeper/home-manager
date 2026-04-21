@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# 管理 Home Manager 受控包列表。
+
 set -euo pipefail
 
 BASE_NIX="${HOME}/.config/home-manager/modules/base.nix"

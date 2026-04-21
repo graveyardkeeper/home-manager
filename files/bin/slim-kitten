@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# 通过 socket 或 TTY 向 kitty 发送精简控制命令。
+
 
 import json
 import os

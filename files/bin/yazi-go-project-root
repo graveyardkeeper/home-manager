@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# 向上查找并输出仓库、workspace 或项目根目录。
+
 set -euo pipefail
 
 path=${1:-$PWD}

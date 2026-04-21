@@ -3,6 +3,7 @@
 {
   home.sessionVariables = {
     EDITOR = "nvim";
+    XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";
     GOPATH = "${config.home.homeDirectory}/workspace/go";
     GOSUMDB = "sum.golang.google.cn";
     GOPRIVATE = "*.byted.org,*.everphoto.cn,git.smartisan.com";
@@ -33,6 +34,7 @@
     markdownlint-cli
     mpv
     neovim
+    neovim-remote
     nodejs
     prettierd
     python3

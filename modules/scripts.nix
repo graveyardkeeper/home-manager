@@ -15,5 +15,5 @@
   home.file.".local/bin/t".source = ../files/bin/t;
   home.file.".local/bin/slim-kitten".source = ../files/bin/slim-kitten;
   home.file.".local/bin/hm-packages".source = ../files/bin/hm-packages;
-  home.file.".claude/skills/home-manager-safe-edit/SKILL.md".source = ../files/claude/skills/home-manager-safe-edit/SKILL.md;
+  home.file.".local/bin/lazygit-open-file".source = ../files/bin/lazygit-open-file;
 }

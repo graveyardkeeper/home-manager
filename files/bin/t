@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# 提供基于剪贴板的文本与编码转换工具菜单。
+
 set -euo pipefail
 
 declare -A command_map=(

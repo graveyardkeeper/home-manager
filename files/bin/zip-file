@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# 交互选择格式后打包文件。
+
 set -euo pipefail
 
 if [ $# -eq 0 ]; then

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# 为终端或文件管理器提供多类型文件预览。
+
 # shellcheck disable=2034
 set -euo pipefail
 IFS=$'\n'

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# 按文件类型选择合适程序打开文件或目录。
+
 
 set -euo pipefail
 

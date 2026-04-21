@@ -8,6 +8,7 @@
     ./modules/yazi.nix
     ./modules/neovim.nix
     ./modules/scripts.nix
+    ./modules/lazygit.nix
   ];
 
   home.username = username;
