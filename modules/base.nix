@@ -32,6 +32,7 @@
     jq
     just
     markdownlint-cli
+    mitmproxy
     mpv
     neovim
     neovim-remote
