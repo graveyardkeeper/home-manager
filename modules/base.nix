@@ -35,6 +35,7 @@
     mpv
     neovim
     neovim-remote
+    nixfmt
     nodejs
     prettierd
     python3
