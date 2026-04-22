@@ -21,10 +21,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `just install <pkg>`
   - `just uninstall <pkg>`
 - Underlying Nix commands used by the justfile:
-  - `nix build --no-link ~/.config/home-manager#homeConfigurations.default.activationPackage`
-  - `nix run ~/.config/home-manager#homeConfigurations.default.activationPackage`
-  - `nix eval ~/.config/home-manager#homeConfigurations.default.activationPackage.drvPath`
-  - `nix flake show ~/.config/home-manager`
+  - `nix build --no-link path:~/.config/home-manager#homeConfigurations.default.activationPackage`
+  - `nix run path:~/.config/home-manager#homeConfigurations.default.activationPackage`
+  - `nix eval path:~/.config/home-manager#homeConfigurations.default.activationPackage.drvPath`
+  - `nix flake show path:~/.config/home-manager`
   - `fish -ic 'command -v nix; nix --version'`
 - Check whether a live config path is Home Manager-managed:
   - `ls -l ~/.config/<name>`

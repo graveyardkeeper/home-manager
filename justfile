@@ -1,7 +1,8 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
-repo := "~/.config/home-manager"
-target := repo + "#homeConfigurations.default.activationPackage"
+repo := env_var('HOME') + "/.config/home-manager"
+flake := "path:" + repo
+target := flake + "#homeConfigurations.default.activationPackage"
 
 _default:
     just --list
@@ -23,7 +24,7 @@ check:
 
 # 查看 flake 输出
 show:
-    nix flake show {{repo}}
+    nix flake show {{flake}}
 
 # 在全新的 fish shell 中验证 nix 是否可用
 verify:
