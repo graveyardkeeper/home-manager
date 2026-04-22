@@ -31,6 +31,7 @@
     hadolint
     jq
     just
+    kitty
     markdownlint-cli
     mitmproxy
     mpv
