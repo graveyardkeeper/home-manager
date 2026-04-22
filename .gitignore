@@ -1,4 +1,5 @@
 files/kitty/scripts/.direnv/
 files/kitty/scripts/__pycache__/
+profiles/default.nix
 *.pyc
 .DS_Store

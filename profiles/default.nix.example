@@ -1,0 +1,10 @@
+{
+  # Common system values:
+  # - aarch64-darwin: Apple Silicon macOS
+  # - x86_64-darwin: Intel macOS
+  # - x86_64-linux: Intel/AMD Linux
+  # - aarch64-linux: ARM Linux
+  system = "aarch64-darwin";
+  username = "your-username";
+  homeDirectory = "/Users/your-username";
+}

@@ -30,8 +30,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `ls -l ~/.config/<name>`
 
 ## Architecture
-- `flake.nix` is the single entrypoint. It exports `homeConfigurations.default` and imports machine identity from `profiles/default.nix` rather than reading `USER`/`HOME` from the shell.
-- `profiles/default.nix` is the repo-owned identity layer for the current machine. It supplies `system`, `username`, and `homeDirectory`.
+- `flake.nix` is the single entrypoint. It exports `homeConfigurations.default` and imports machine identity from the local `profiles/default.nix` rather than reading `USER`/`HOME` from the shell.
+- `profiles/default.nix.example` is the repo-tracked template for machine identity. Each machine must create its own local `profiles/default.nix` with `system`, `username`, and `homeDirectory` before evaluation.
 - `home.nix` is the root Home Manager module. It receives `username` and `homeDirectory` via `extraSpecialArgs`, sets `home.username` / `home.homeDirectory`, and aggregates the feature modules under `modules/`.
 - `modules/base.nix` owns shared packages, PATH, and session variables. Reuse `config.home.homeDirectory` when building user-relative paths.
 - The `home.packages` block in `modules/base.nix` now contains a marker-delimited managed section for simple package identifiers. `just install` / `just uninstall` edit only that managed section through `hm-packages`.

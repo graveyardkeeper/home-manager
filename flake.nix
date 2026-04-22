@@ -11,7 +11,19 @@
 
   outputs = { nixpkgs, home-manager, ... }:
     let
-      profile = import ./profiles/default.nix;
+      profilePath = ./profiles/default.nix;
+      profile =
+        if builtins.pathExists profilePath then
+          import profilePath
+        else
+          throw ''
+            Missing local profile: profiles/default.nix
+
+            Copy profiles/default.nix.example to profiles/default.nix and set:
+              - system
+              - username
+              - homeDirectory
+          '';
     in {
       homeConfigurations.default = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {

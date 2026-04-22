@@ -10,7 +10,8 @@
 ## 仓库结构
 - `flake.nix`：flake 入口
 - `flake.lock`：flake 依赖锁定文件
-- `profiles/default.nix`：当前默认配置使用的机器身份信息（`system`、`username`、`homeDirectory`）
+- `profiles/default.nix.example`：提交到仓库的机器身份模板（`system`、`username`、`homeDirectory`）
+- `profiles/default.nix`：本机本地文件，不纳入 git；首次使用时从 `profiles/default.nix.example` 复制并填写
 - `home.nix`：模块聚合入口
 - `modules/`：Home Manager 模块声明
 - `files/`：被托管出去的配置内容和脚本
@@ -46,9 +47,23 @@ experimental-features = nix-command flakes
 - 直接 `git clone` 你的配置仓库到 `~/.config/home-manager`
 - 从旧机器复制整个 `~/.config/home-manager` 目录
 
-### 4. 首次应用配置
-当前默认入口是 `homeConfigurations.default`，它对应的机器身份信息来自仓库中的 `profiles/default.nix`，而不是当前 shell 的环境变量。
+### 4. 创建本机 profile
+当前默认入口是 `homeConfigurations.default`，它对应的机器身份信息来自本机本地的 `profiles/default.nix`，而不是当前 shell 的环境变量。
 
+首次使用前先复制模板：
+
+```bash
+cp ~/.config/home-manager/profiles/default.nix.example ~/.config/home-manager/profiles/default.nix
+```
+
+然后按当前机器填写这三个字段：
+- `system`
+- `username`
+- `homeDirectory`
+
+如果缺少这个文件，flake 评估会直接报错并提醒你创建它。
+
+### 5. 首次应用配置
 进入一个已经能使用 `nix` 的 shell 后执行：
 
 ```bash
@@ -57,7 +72,7 @@ nix run ~/.config/home-manager#homeConfigurations.default.activationPackage
 
 如果你此时还没有 fish 环境，也没关系，首次应用可以先在当前 shell 里完成。
 
-### 5. 首次验证
+### 6. 首次验证
 打开一个新的 shell，确认：
 
 ```bash
