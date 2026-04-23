@@ -22,6 +22,12 @@ in
       end
       set -gx SHELL (command -s fish)
       if status is-interactive
+        # Tide stores its preset in universal variables, so seed it once per machine.
+        if not set -q tide_configured_by_hm
+          tide configure --auto --style=Lean --prompt_colors='True color' --show_time=No --lean_prompt_height='One line' --prompt_spacing=Compact --icons='Few icons' --transient=No
+          set -U tide_character_vi_icon_default ❯
+          set -U tide_configured_by_hm 1
+        end
       end
     '';
   };
