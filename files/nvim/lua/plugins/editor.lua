@@ -143,16 +143,33 @@ return {
         desc = 'Toggle mini.diff overlay',
       },
     },
-    opts = {
-      view = {
-        style = 'sign',
-        signs = {
-          add = '▎',
-          change = '▎',
-          delete = '',
+    opts = function()
+      local set_hl = function()
+        vim.api.nvim_set_hl(0, 'MiniDiffOverAdd', { fg = '#f9f06b', bg = '#4a3b00', bold = true })
+        vim.api.nvim_set_hl(0, 'MiniDiffOverChange', { fg = '#ffcf99', bg = '#6a2e00', bold = true })
+        vim.api.nvim_set_hl(0, 'MiniDiffOverDelete', { fg = '#ffb3c1', bg = '#6a1b35', bold = true })
+        vim.api.nvim_set_hl(0, 'MiniDiffOverChangeBuf', { bg = '#7a3a00', fg = '#ffe4c4', bold = true, underline = true })
+        vim.api.nvim_set_hl(0, 'MiniDiffOverContext', { fg = '#ffe4c4', bg = '#523000' })
+        vim.api.nvim_set_hl(0, 'MiniDiffOverContextBuf', { bg = '#5a2a00' })
+      end
+
+      set_hl()
+      vim.api.nvim_create_autocmd('ColorScheme', {
+        group = vim.api.nvim_create_augroup('MiniDiffOverlayHighlight', { clear = true }),
+        callback = set_hl,
+      })
+
+      return {
+        view = {
+          style = 'sign',
+          signs = {
+            add = '▎',
+            change = '▎',
+            delete = '',
+          },
         },
-      },
-    },
+      }
+    end,
   },
   {
     'sindrets/diffview.nvim',
