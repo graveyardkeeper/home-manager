@@ -43,6 +43,7 @@
     python3
     ripgrep
     sqlfluff
+    typos-lsp
     yazi
     zk
     zoxide

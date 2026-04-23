@@ -17,7 +17,6 @@ return {
         sources = {
           default = { 'lsp', 'path', 'snippets', 'buffer' },
           providers = {
-            snippets = { opts = { search_paths = snippets_dir } },
             lsp = {
               transform_items = function(ctx, items)
                 local item_kind = require('blink.cmp.types').CompletionItemKind
@@ -39,6 +38,7 @@ return {
                 return out
               end,
             },
+            snippets = { opts = { search_paths = snippets_dir } },
             lazydev = {
               name = 'LazyDev',
               module = 'lazydev.integrations.blink',

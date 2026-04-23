@@ -129,9 +129,24 @@ local function setup_lspconfig()
     },
     typos_lsp = {
       cmd = { 'typos-lsp' },
+      filetypes = {
+        'gitcommit',
+        'go',
+        'markdown',
+        'norg',
+        'org',
+        'plaintext',
+        'rst',
+        'text',
+      },
       root_markers = { 'typos.toml', '_typos.toml', '.typos.toml' },
       init_options = {
-        diagnosticSeverity = 'Hint',
+        diagnosticSeverity = 'Information',
+      },
+      settings = {
+        typos = {
+          diagnosticSeverity = 'Information',
+        },
       },
     },
     dockerls = {
@@ -350,7 +365,7 @@ local function setup_lspconfig()
   vim.diagnostic.config {
     underline = true,
     virtual_text = true,
-    update_in_insert = false,
+    update_in_insert = true,
     severity_sort = true,
     signs = {
       text = {
