@@ -194,6 +194,7 @@ map {
 map { '<leader><space>', function() Snacks.picker.smart() end, desc = 'Smart Find Files' }
 map { '<leader>n', function() Snacks.picker.notifications() end, desc = 'Notification History' }
 map { '<leader>gg', function() Util.pick_git_files() end, desc = 'My Git Files' }
+map { '<leader>ex', function() Snacks.picker.explorer() end, desc = 'Explorer' }
 map { 'ma', function() require('util.marker').add() end, desc = 'Add Marker' }
 map { 'mm', function() require('util.marker').pick() end, desc = 'List Markers' }
 -- map { 'mm', function() Snacks.picker.marks() end, desc = 'List Marks' }
@@ -326,7 +327,6 @@ local diagnostic_goto = function(next, severity)
 end
 map { '<leader>q', vim.diagnostic.setloclist, desc = 'Open diagnostic [Q]uickfix list' }
 map { '<leader>cd', vim.diagnostic.open_float, desc = 'Line Diagnostics' }
-
 map { '<leader>lz', '<cmd>Lazy<cr>', desc = 'Lazy' }
 
 map {
