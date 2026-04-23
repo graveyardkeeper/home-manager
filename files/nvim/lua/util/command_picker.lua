@@ -3,6 +3,24 @@ local storage = require 'util.storage'
 
 local M = {}
 
+local function get_hunk_range(bufnr, line)
+  local ok, gitsigns = pcall(require, 'gitsigns')
+  if not ok then return end
+  local hunks = gitsigns.get_hunks(bufnr)
+  if type(hunks) ~= 'table' then return end
+
+  for _, hunk in ipairs(hunks) do
+    local added = hunk.added or {}
+    local removed = hunk.removed or {}
+    local start_line = added.start or removed.start
+    local count = math.max(added.count or 0, removed.count or 0, 1)
+    if start_line then
+      local end_line = start_line + count - 1
+      if line >= start_line and line <= end_line then return start_line, end_line end
+    end
+  end
+end
+
 ---@class util.command_picker.ctx
 ---@field visual util.visual|nil
 ---@field buf integer
@@ -13,6 +31,27 @@ local commands = {
   {
     name = 'Git blame this file',
     callback = function(ctx) require('util.blame').show(ctx.win, ctx.buf) end,
+  },
+  {
+    name = 'Discard changed region',
+    callback = function(ctx)
+      local start_line, end_line
+      if ctx.visual then
+        start_line = math.min(ctx.visual.pos[1], ctx.visual.end_pos[1])
+        end_line = math.max(ctx.visual.pos[1], ctx.visual.end_pos[1])
+      else
+        local line = vim.api.nvim_win_get_cursor(ctx.win)[1]
+        start_line, end_line = get_hunk_range(ctx.buf, line)
+      end
+
+      if not start_line then
+        vim.notify('Cursor is not in a changed region', vim.log.levels.INFO)
+        return
+      end
+
+      require('gitsigns').reset_hunk { start_line, end_line }
+      vim.notify('Discarded changed region')
+    end,
   },
   {
     name = 'Go add JSON tag',
