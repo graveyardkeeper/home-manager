@@ -14,12 +14,19 @@ show_files() {
   done
 }
 
+author_name=$(git config --get user.name)
+author_email=$(git config --get user.email)
+
 git --no-pager status --porcelain=v1 -uall | ignore | while IFS= read -r line; do
   echo "uncommit $line"
 done
 
 (
-  git --no-pager log -10 --perl-regexp --author='yangrui|urie|杨锐' --format=format:%H --no-merges
+  if [ -n "$author_email" ]; then
+    git --no-pager log -10 --author="$author_email" --format=format:%H --no-merges
+  elif [ -n "$author_name" ]; then
+    git --no-pager log -10 --author="$author_name" --format=format:%H --no-merges
+  fi
   echo # git log 末尾无换行符导致read不到最后一行，手动echo添加换行符
 ) | while read -r line; do
   if [ -n "$line" ]; then
