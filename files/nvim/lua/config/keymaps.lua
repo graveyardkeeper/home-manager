@@ -187,7 +187,7 @@ map {
   end,
 }
 map {
-  '<leader>st',
+  '<leader>td',
   function() Snacks.picker.todo_comments { keywords = { 'TODO', 'FIX', 'FIXME' } } end,
   desc = 'Todo/Fix/Fixme',
 }
