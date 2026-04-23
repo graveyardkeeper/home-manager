@@ -1,5 +1,8 @@
 { pkgs, ... }:
 
+let
+  hmLib = import ./lib.nix { lib = pkgs.lib; };
+in
 {
   programs.fish = {
     enable = true;
@@ -23,16 +26,5 @@
     '';
   };
 
-  xdg.configFile."fish/functions".source = pkgs.lib.cleanSourceWith {
-    src = ../files/fish/functions;
-    filter =
-      path: type:
-      let
-        baseName = builtins.baseNameOf path;
-      in
-      !(builtins.elem baseName [ ".DS_Store" ])
-      && !pkgs.lib.hasSuffix ".tmp" baseName
-      && !pkgs.lib.hasSuffix ".bak" baseName
-      && !pkgs.lib.hasSuffix ".swp" baseName;
-  };
+  xdg.configFile."fish/functions".source = hmLib.cleanSource ../files/fish/functions [ ];
 }
