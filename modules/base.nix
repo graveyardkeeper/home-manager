@@ -28,6 +28,7 @@
     fzf
     git
     gofumpt
+    gopls
     hadolint
     jq
     just
