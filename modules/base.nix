@@ -43,6 +43,7 @@
     python3
     ripgrep
     sqlfluff
+    tree-sitter
     typos-lsp
     yazi
     zk
