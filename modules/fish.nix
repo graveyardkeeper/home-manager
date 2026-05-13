@@ -21,6 +21,9 @@ in
         source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.fish
       end
       set -gx SHELL (command -s fish)
+      set -x SSL_CERT_FILE ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+      set -x NIX_SSL_CERT_FILE $SSL_CERT_FILE
+      set -x GIT_SSL_CAINFO $SSL_CERT_FILE
       if status is-interactive
         # Tide stores its preset in universal variables, so seed it once per machine.
         if not set -q tide_configured_by_hm
