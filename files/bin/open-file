@@ -176,7 +176,7 @@ esac
 
 # extension-based rules
 ext="${file0##*.}"
-ext_lc="${ext,,}"
+ext_lc=$(printf '%s' "$ext" | tr '[:upper:]' '[:lower:]')
 
 case "$ext_lc" in
 pdf) append_option "pdf_to_png" ;;
