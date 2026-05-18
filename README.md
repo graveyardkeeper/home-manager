@@ -67,7 +67,7 @@ cp ~/.config/home-manager/profiles/default.nix.example ~/.config/home-manager/pr
 进入一个已经能使用 `nix` 的 shell 后执行：
 
 ```bash
-nix run path:~/.config/home-manager#homeConfigurations.default.activationPackage
+nix run "path:$HOME/.config/home-manager#homeConfigurations.default.activationPackage"
 ```
 
 如果你此时还没有 fish 环境，也没关系，首次应用可以先在当前 shell 里完成。
@@ -141,8 +141,8 @@ fish -ic 'command -v nix; nix --version'
    - `just show`
    - `just verify`
 3. 对应的底层命令仍然是：
-   - `nix build --no-link path:~/.config/home-manager#homeConfigurations.default.activationPackage`
-   - `nix run path:~/.config/home-manager#homeConfigurations.default.activationPackage`
+   - `nix build --no-link "path:$HOME/.config/home-manager#homeConfigurations.default.activationPackage"`
+   - `nix run "path:$HOME/.config/home-manager#homeConfigurations.default.activationPackage"`
    - 其中 `--no-link` 用来避免在当前目录生成 `result` 软链。
 4. 打开新的 shell 或应用会话验证修改结果。
 
