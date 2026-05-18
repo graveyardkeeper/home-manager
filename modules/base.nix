@@ -27,6 +27,7 @@
     fish
     fzf
     git
+    go
     gofumpt
     gopls
     hadolint
