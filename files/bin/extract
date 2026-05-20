@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo "Usage: $0 <archive-file>"
+  exit 1
+}
+
+[[ $# -lt 1 ]] && usage
+
+file="$1"
+
+[[ ! -f "$file" ]] && {
+  echo "Error: file not found: $file"
+  exit 1
+}
+
+# 文件名与扩展名处理
+filename=$(basename -- "$file")
+dirname=""
+ext=""
+
+# 针对多重扩展名做特别处理（tar.gz / tar.bz2 / tar.xz / tar.zst）
+case "$filename" in
+*.tar.gz | *.tgz)
+  dirname="${filename%.tar.gz}"
+  dirname="${dirname%.tgz}"
+  ext="tar.gz"
+  ;;
+*.tar.bz2 | *.tbz2)
+  dirname="${filename%.tar.bz2}"
+  dirname="${dirname%.tbz2}"
+  ext="tar.bz2"
+  ;;
+*.tar.xz | *.txz)
+  dirname="${filename%.tar.xz}"
+  dirname="${dirname%.txz}"
+  ext="tar.xz"
+  ;;
+*.tar.zst | *.tzst)
+  dirname="${filename%.tar.zst}"
+  dirname="${dirname%.tzst}"
+  ext="tar.zst"
+  ;;
+*)
+  dirname="${filename%.*}"
+  ext="${filename##*.}"
+  ;;
+esac
+
+mkdir -p "$dirname"
+
+echo "📦 Extracting '$file' -> '$dirname/'"
+
+case "$ext" in
+zip)
+  unzip -q "$file" -d "$dirname"
+  ;;
+rar)
+  unrar x -inul "$file" "$dirname/"
+  ;;
+7z | 7zip)
+  7z x -y "$file" -o"$dirname"
+  ;;
+tar)
+  tar -xf "$file" -C "$dirname"
+  ;;
+tar.gz | tgz)
+  tar -xzf "$file" -C "$dirname"
+  ;;
+tar.bz2 | tbz2)
+  tar -xjf "$file" -C "$dirname"
+  ;;
+tar.xz | txz)
+  tar -xJf "$file" -C "$dirname"
+  ;;
+tar.zst | tzst)
+  tar --use-compress-program=unzstd -xf "$file" -C "$dirname"
+  ;;
+gz)
+  gunzip -c "$file" >"$dirname/$dirname"
+  ;;
+bz2)
+  bunzip2 -c "$file" >"$dirname/$dirname"
+  ;;
+xz)
+  unxz -c "$file" >"$dirname/$dirname"
+  ;;
+zst)
+  unzstd -c "$file" >"$dirname/$dirname"
+  ;;
+chlz)
+  # 尝试多种方式解压.chlz文件
+  if command -v unzip >/dev/null 2>&1 && unzip -l "$file" >/dev/null 2>&1; then
+    echo "ℹ️  Detected ZIP-based .chlz archive"
+    unzip -q "$file" -d "$dirname"
+  elif command -v tar >/dev/null 2>&1 && tar -tf "$file" >/dev/null 2>&1; then
+    echo "ℹ️  Detected TAR-based .chlz archive"
+    tar -xf "$file" -C "$dirname"
+  elif command -v 7z >/dev/null 2>&1; then
+    echo "ℹ️  Trying 7z for .chlz archive"
+    7z x -y "$file" -o"$dirname"
+  else
+    echo "❌ Cannot extract .chlz file: no suitable extractor found"
+    echo "   Please install unzip, tar, or 7z"
+    exit 2
+  fi
+  ;;
+*)
+  mime="$(file -bL --mime-type -- "$file")"
+  case "${mime}" in
+  *zip)
+    unzip -q "$file" -d "$dirname"
+    ;;
+  *)
+    echo "❌ Unsupported file type: $ext and $mime"
+    exit 2
+    ;;
+  esac
+  ;;
+esac
+
+echo "✨ Done."
+
+# yazi跳转到那个文件
+if [[ -n "${YAZI_ID:-}" ]]; then
+  ya emit cd "$dirname" >/dev/null 2>&1 || true
+fi

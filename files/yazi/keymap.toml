@@ -69,7 +69,6 @@ prepend_keymap = [
   { on = ["y", "y"], run = ["yank", "escape --visual --select"], desc = "Copy the selected files" },
   { on = ["z", "<Space>"], run = "plugin zoxide", desc = "Jump to a directory via zoxide" },
   { on = ["z", "p"], run = ["shell 'zip-file \"$@\"' --block", "escape --visual --select"] },
-  { on = ["z", "u"], run = ["shell 'extract-archive \"$@\" \"$0\"' --block", "escape --visual --select"], desc = "Extract selected archives into named directories" },
   { on = ["z", "t"], run = ["shell 'tar -czvf tmp.tar.gz \"$@\"' --block", "escape --visual --select"] },
 ]
 
