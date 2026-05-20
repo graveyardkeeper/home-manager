@@ -15,6 +15,7 @@
     "/opt/homebrew/bin"
     "${config.home.homeDirectory}/bin"
     "${config.home.homeDirectory}/.local/bin"
+    "${config.home.homeDirectory}/.npm-global/bin"
     "/usr/local/go/bin"
     "${config.home.homeDirectory}/workspace/go/bin"
     "${config.home.homeDirectory}/workspace/go/bin/darwin_amd64"
