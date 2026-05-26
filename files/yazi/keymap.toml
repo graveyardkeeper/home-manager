@@ -24,8 +24,6 @@ prepend_keymap = [
   { on = ["c", "m"], run = "plugin chmod", desc = "Chmod on selected files" },
   { on = ["c", "o"], run = "shell 'sudo chown -R \"$(whoami)\" \"$0\"' --block" },
   { on = ["c", "x"], run = ["shell 'chmod u+x \"$@\"' --block", "escape --visual --select"] },
-  { on = ["c", "a"], run = ["shell 'f=\"$0\";t=\"$HOME/nix/dotfiles/${f#$HOME/}\"; mkdir -p $(dirname \"$t\") && cp \"$f\" \"$t\" && ya emit reveal \"$t\"' --block"] },
-  { on = ["c", "A"], run = ["shell 'f=\"$0\";t=\"$HOME/nix/dotfiles/${f#$HOME/}.age\"; mkdir -p $(dirname \"$t\") && age -r $(age-keygen -y /var/lib/sops-nix/keys.txt) -o \"$t\" \"$f\" && ya emit reveal \"$t\"' --block"] },
   { on = ["d", "!"], run = ["shell 'sudo rm -rf \"$@\"\n' --block", "escape --visual --select"], desc = "sudo delete the files" },
   { on = ["d", "D"], run = ["remove --force", "escape --visual --select"], desc = "Move the files to the trash" },
   { on = ["d", "d"], run = ["yank --cut", "escape --visual --select"], desc = "Cut the selected files" },
