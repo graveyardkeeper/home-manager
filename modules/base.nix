@@ -49,6 +49,7 @@
     tree-sitter
     typos-lsp
     yazi
+    zip
     zk
     zoxide
     # hm-packages:end

@@ -7,9 +7,9 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-archive_name='tmp.zip'
+archive_name='tmp.tar.gz'
 if [ $# -eq 1 ]; then
-  archive_name="$(basename -- "$1").zip"
+  archive_name="$(basename -- "$1").tar.gz"
 fi
 
 relative_paths=()
@@ -24,4 +24,4 @@ for path in "$@"; do
   esac
 done
 
-zip -r "$archive_name" "${relative_paths[@]}"
+tar -czvf "$archive_name" "${relative_paths[@]}"

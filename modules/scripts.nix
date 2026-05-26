@@ -9,6 +9,7 @@
   home.file.".local/bin/git-file".source = ../files/bin/git-file;
   home.file.".local/bin/preview".source = ../files/bin/preview;
   home.file.".local/bin/zip-file".source = ../files/bin/zip-file;
+  home.file.".local/bin/tar-gz-file".source = ../files/bin/tar-gz-file;
   home.file.".local/bin/extract".source = ../files/bin/extract;
   home.file.".local/bin/yazi-go-project-root".source = ../files/bin/yazi-go-project-root;
   home.file.".local/bin/rsync-tool".source = ../files/bin/rsync-tool;
