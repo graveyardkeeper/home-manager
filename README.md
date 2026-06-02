@@ -18,10 +18,10 @@ sh <(curl -L https://nixos.org/nix/install)
 nix --version
 ```
 
-2. 确保 `~/.config/nix/nix.conf` 包含（没有这个文件需要手动创建）：
+2. 运行下面这条命令，确保 `~/.config/nix/nix.conf` 包含所需配置（若文件或目录不存在会自动创建）：
 
-```ini
-experimental-features = nix-command flakes
+```bash
+mkdir -p ~/.config/nix && grep -qxF 'experimental-features = nix-command flakes' ~/.config/nix/nix.conf 2>/dev/null || echo 'experimental-features = nix-command flakes' >> ~/.config/nix/nix.conf
 ```
 
 3. 获取仓库到 `~/.config/home-manager`。
