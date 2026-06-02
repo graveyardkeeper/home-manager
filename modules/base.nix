@@ -48,6 +48,7 @@
     sqlfluff
     tree-sitter
     typos-lsp
+    uv
     yazi
     zip
     zk

@@ -96,3 +96,11 @@ ls -l ~/.config/<name>
 - `~/.config/fish/functions` <- `files/fish/functions`
 - `~/.local/bin/*` <- `files/bin/*`
 - `~/.claude/skills/*` <- `files/claude/skills/*`
+
+## 非Nix托管应用
+
+有些应用不在`nixpkgs`中，无法通过Nix安装，在此记录，如有需求可手动安装：
+
+```bash
+uv tool install thrift-fmt
+```
