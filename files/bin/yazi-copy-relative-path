@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# 复制相对 git 仓库根目录的路径；不在仓库中时回退为绝对路径。
+
+set -euo pipefail
+
+mode=${1:?mode is required}
+path=${2:?path is required}
+
+path=$(realpath "$path")
+
+if [ "$mode" = "repo-relative-dir" ]; then
+  path=$(dirname "$path")
+elif [ "$mode" != "repo-relative-path" ]; then
+  printf 'unsupported mode: %s\n' "$mode" >&2
+  exit 1
+fi
+
+find_git_root() {
+  local current=$1
+
+  while :; do
+    if [ -e "$current/.git" ]; then
+      printf '%s\n' "$current"
+      return 0
+    fi
+
+    if [ "$current" = "/" ]; then
+      return 1
+    fi
+
+    current=$(dirname "$current")
+  done
+}
+
+if git_root=$(find_git_root "$path"); then
+  if [ "$path" = "$git_root" ]; then
+    text=.
+  else
+    text=${path#"$git_root"/}
+  fi
+else
+  text=$path
+fi
+
+printf '%s' "$text" | pbcopy
