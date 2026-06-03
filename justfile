@@ -30,6 +30,10 @@ show:
 verify:
     fish -ic 'command -v nix; nix --version'
 
+# 用 repo 中的 nvim 配置启动 Neovim，便于执行 :Lazy 管理插件版本
+nvim-lazy:
+    XDG_CONFIG_HOME={{repo}}/files nvim
+
 # 列出当前声明式软件包
 packages:
     {{repo}}/files/bin/hm-packages list
