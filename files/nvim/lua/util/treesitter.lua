@@ -110,9 +110,6 @@ local jump_function_name_config = {
   nu = {
     decl_def = 'unquoted_name',
   },
-  rust = {
-    function_item = 'name',
-  },
 }
 
 --- @param node TSNode
@@ -157,8 +154,6 @@ local function_node_types = {
   constructor_definition = true,
   -- go
   func_literal = true,
-  -- rust
-  function_item = true,
   -- js/ts
   ['function'] = true,
   function_expression = true,

@@ -169,12 +169,6 @@ return {
             },
             -- after = { 'func main() {', '\tfmt.Println()', '}' },
           },
-          ['rust'] = {
-            before = {
-              '#[allow(dead_code)]',
-              'pub struct Solution {}',
-            },
-          },
         },
         hooks = {
           ['question_enter'] = {

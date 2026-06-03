@@ -9,7 +9,7 @@ return {
     config = function()
       local ts = require 'nvim-treesitter'
       local need_install_langs = vim.split(
-        'bash,c,cmake,corn,cpp,css,csv,diff,dockerfile,fish,git_config,gitcommit,gitignore,go,gomod,gosum,gotmpl,gowork,graphql,html,http,ini,java,javascript,jq,jsdoc,json,json5,just,latex,lua,luadoc,luap,markdown,markdown_inline,nginx,ninja,nix,nu,printf,proto,python,query,regex,ron,rst,rust,scss,smali,sql,ssh_config,thrift,todotxt,toml,tsx,typescript,vim,vimdoc,vue,xml,yaml',
+        'bash,c,cmake,corn,cpp,css,csv,diff,dockerfile,fish,git_config,gitcommit,gitignore,go,gomod,gosum,gotmpl,gowork,graphql,html,http,ini,java,javascript,jq,jsdoc,json,json5,just,latex,lua,luadoc,luap,markdown,markdown_inline,nginx,ninja,nix,nu,printf,proto,python,query,regex,ron,rst,scss,smali,sql,ssh_config,thrift,todotxt,toml,tsx,typescript,vim,vimdoc,vue,xml,yaml',
         ','
       )
       vim.api.nvim_create_autocmd('FileType', {

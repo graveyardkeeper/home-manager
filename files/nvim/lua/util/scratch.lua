@@ -101,17 +101,6 @@ function M.list()
       },
     },
     {
-      ft = 'rust',
-      ext = 'rs',
-      main = 'src/main.rs',
-      keys = {
-        {
-          '<cr>',
-          function(ctx) terminal_run({ 'cargo', 'run' }, { cwd = ctx.root }) end,
-        },
-      },
-    },
-    {
       ft = 'c',
       main = 'src/scratch_main.c',
       keys = {

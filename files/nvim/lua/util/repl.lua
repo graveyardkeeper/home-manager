@@ -78,10 +78,6 @@ local config = {
   just_repl = {
     cmd = { 'just', 'repl' },
   },
-  evcxr = {
-    cmd = { 'evcxr' },
-    highlight = 'rust',
-  },
   nix = {
     cmd = { 'nix', 'repl' },
     highlight = 'nix',
@@ -117,8 +113,6 @@ function M.smart_new()
     key = 'bash'
   elseif ft == 'javascript' then
     key = check_bun() and 'bun' or 'node'
-  elseif ft == 'rust' then
-    key = 'evcxr'
   end
   if not config[key] then key = 'default' end
   return M.new(0, key)
