@@ -14,11 +14,6 @@ rev = "1962818"
 hash = "fa268cb59989a87780605fdcfb8d99a9"
 
 [[plugin.deps]]
-use = "yazi-rs/plugins:yamb"
-rev = "1962818"
-hash = "99aa06d3014798d86001c324468d497f"
-
-[[plugin.deps]]
 use = "yazi-rs/plugins:piper"
 rev = "1962818"
 hash = "384464b6df8cb807425c521f8cd790f3"
@@ -42,11 +37,6 @@ hash = "f0c8c378184d5f8abd1b095a443d336d"
 use = "yazi-rs/plugins:full-border"
 rev = "1962818"
 hash = "6fa6a05a81c98dd000fbca3cca6e9682"
-
-[[plugin.deps]]
-use = "yazi-rs/plugins:types"
-rev = "1962818"
-hash = "4161cfa043b5ba3341d82c6869007b41"
 
 [[plugin.deps]]
 use = "h-hg/yamb"
