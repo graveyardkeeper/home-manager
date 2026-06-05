@@ -8,6 +8,15 @@ vim.g.is_read_stdin = false
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
+-- Prewarm neovim-remote once after startup. The first lazygit-open-file
+-- invocation otherwise pays the cold-start cost of nvr's Python/pynvim stack.
+vim.defer_fn(function()
+  local server = vim.v.servername
+  if server == '' or vim.fn.executable 'nvr' == 0 then return end
+
+  vim.fn.jobstart({ 'nvr', '--nostart', '-s', '--servername', server, '--remote-expr', '1' }, { detach = true })
+end, 1000)
+
 local set_main_window = ag 'set_main_window'
 au({ 'UIEnter', 'TabNew' }, {
   group = set_main_window,
