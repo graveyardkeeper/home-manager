@@ -10,14 +10,42 @@ line=$(
     | head -n1
 )
 
-if command -v nvr >/dev/null 2>&1 && [[ -n ${NVIM:-} ]]; then
-  target=$(realpath "$file")
+vim_quote() {
+  local value=$1
+  value=${value//\'/\'\'}
+  printf "'%s'" "$value"
+}
+
+open_with_native_remote() {
+  local target=$1
+  local edit_cmd expr
 
   if [[ -n ${line:-} ]]; then
-    exec nvr -cc 'close' -c "silent edit +${line} $(printf '%q' "$target")" --remote-silent
+    edit_cmd="silent edit +${line} "
+  else
+    edit_cmd="silent edit "
   fi
 
-  exec nvr -cc 'close' -c "silent edit $(printf '%q' "$target")" --remote-silent
+  # Prefer Neovim's native remote client over nvr. This avoids starting nvr's
+  # Python/pynvim stack on every lazygit file-open request.
+  expr="execute('silent! close') . execute('${edit_cmd}' . fnameescape($(vim_quote "$target")))"
+  nvim --server "$NVIM" --remote-expr "$expr" >/dev/null 2>&1
+}
+
+if [[ -n ${NVIM:-} ]]; then
+  target=$(realpath "$file")
+
+  if open_with_native_remote "$target"; then
+    exit
+  fi
+
+  if command -v nvr >/dev/null 2>&1; then
+    if [[ -n ${line:-} ]]; then
+      exec nvr -cc 'close' -c "silent edit +${line} $(printf '%q' "$target")" --remote-silent
+    fi
+
+    exec nvr -cc 'close' -c "silent edit $(printf '%q' "$target")" --remote-silent
+  fi
 fi
 
 if [[ -n ${line:-} ]]; then
