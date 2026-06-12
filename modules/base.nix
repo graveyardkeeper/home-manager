@@ -23,6 +23,7 @@
 
   home.packages = with pkgs; [
     # hm-packages:start
+    bat
     delta
     fd
     fish
