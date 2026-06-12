@@ -1,0 +1,130 @@
+#!/usr/bin/env python3
+
+import json
+import re
+import sys
+from pathlib import Path
+
+GO_KEYWORDS = {
+    "break",
+    "default",
+    "func",
+    "interface",
+    "select",
+    "case",
+    "defer",
+    "go",
+    "map",
+    "struct",
+    "chan",
+    "else",
+    "goto",
+    "package",
+    "switch",
+    "const",
+    "fallthrough",
+    "if",
+    "range",
+    "type",
+    "continue",
+    "for",
+    "import",
+    "return",
+    "var",
+}
+
+
+def usage():
+    print("usage: yazi-sync-go-package (--check|--apply) <dir> <old-name> <new-name>", file=sys.stderr)
+    return 2
+
+
+def go_package_name(name):
+    pkg = re.sub(r"[^0-9A-Za-z_]", "_", name).lower()
+    pkg = re.sub(r"_+", "_", pkg).strip("_")
+    if not pkg:
+        pkg = "_"
+    if pkg[0].isdigit() or pkg in GO_KEYWORDS:
+        pkg = "_" + pkg
+    return pkg
+
+
+def matching_files(directory, old_pkg):
+    pattern = re.compile(rf"^(package\s+){re.escape(old_pkg)}(\s*)$")
+    files = []
+
+    for path in sorted(directory.iterdir()):
+        if not path.is_file() or path.suffix != ".go":
+            continue
+
+        try:
+            with path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    if pattern.match(line.rstrip("\n\r")):
+                        files.append(path)
+                        break
+                    if line.startswith("package "):
+                        break
+        except UnicodeDecodeError:
+            continue
+
+    return files
+
+
+def apply(files, old_pkg, new_pkg):
+    pattern = re.compile(rf"^(package\s+){re.escape(old_pkg)}(\s*)$")
+
+    for path in files:
+        text = path.read_text(encoding="utf-8")
+        lines = text.splitlines(keepends=True)
+        changed = False
+
+        for i, line in enumerate(lines):
+            newline = ""
+            body = line
+            if body.endswith("\r\n"):
+                body, newline = body[:-2], "\r\n"
+            elif body.endswith("\n"):
+                body, newline = body[:-1], "\n"
+
+            if pattern.match(body):
+                lines[i] = pattern.sub(rf"\1{new_pkg}\2", body) + newline
+                changed = True
+                break
+            if body.startswith("package "):
+                break
+
+        if changed:
+            path.write_text("".join(lines), encoding="utf-8")
+
+
+def main():
+    if len(sys.argv) != 5:
+        return usage()
+
+    mode, directory_arg, old_name, new_name = sys.argv[1:]
+    if mode not in {"--check", "--apply"}:
+        return usage()
+
+    directory = Path(directory_arg)
+    if not directory.is_dir():
+        print(f"not a directory: {directory}", file=sys.stderr)
+        return 1
+
+    old_pkg = go_package_name(old_name)
+    new_pkg = go_package_name(new_name)
+    files = [] if old_pkg == new_pkg else matching_files(directory, old_pkg)
+
+    if mode == "--apply":
+        apply(files, old_pkg, new_pkg)
+
+    print(json.dumps({
+        "oldPackage": old_pkg,
+        "newPackage": new_pkg,
+        "files": [str(path) for path in files],
+    }, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

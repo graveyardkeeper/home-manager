@@ -13,6 +13,7 @@
   home.file.".local/bin/extract".source = ../files/bin/extract;
   home.file.".local/bin/yazi-go-project-root".source = ../files/bin/yazi-go-project-root;
   home.file.".local/bin/yazi-copy-relative-path".source = ../files/bin/yazi-copy-relative-path;
+  home.file.".local/bin/yazi-sync-go-package".source = ../files/bin/yazi-sync-go-package;
   home.file.".local/bin/rsync-tool".source = ../files/bin/rsync-tool;
   home.file.".local/bin/t".source = ../files/bin/t;
   home.file.".local/bin/slim-kitten".source = ../files/bin/slim-kitten;
