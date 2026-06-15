@@ -31,6 +31,7 @@
     git
     go
     gofumpt
+    gomodifytags
     gopls
     hadolint
     jq
