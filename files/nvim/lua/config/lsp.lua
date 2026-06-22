@@ -41,13 +41,22 @@ local function setup_lspconfig()
       root_markers = { 'biome.json', 'biome.jsonc', 'package.json' },
     },
     gopls = {
-      cmd = { 'gopls', '-remote=auto', '-logfile=auto' },
-      -- cmd = { 'gopls' },
+      cmd = { 'gopls' },
       filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' },
       root_markers = { 'go.work', 'go.mod' },
       settings = {
         gopls = {
           gofumpt = true,
+          directoryFilters = {
+            '-**/.git',
+            '-**/.idea',
+            '-**/.cache',
+            '-**/.claude',
+            '-**/.agents',
+            '-**/output',
+            '-**/node_modules',
+            '-**/vendor',
+          },
           hints = {
             parameterNames = false,
             compositeLiteralFields = true,
