@@ -350,7 +350,9 @@ local function setup_lspconfig()
   for name, config in pairs(configs) do
     if validate(config) then
       table.insert(can_enable, name)
-      config.root_markers = vim.list_extend(config.root_markers or {}, { '.git' })
+      if name ~= 'gopls' then
+        config.root_markers = vim.list_extend(config.root_markers or {}, { '.git' })
+      end
       vim.lsp.config(name, config)
     end
   end
