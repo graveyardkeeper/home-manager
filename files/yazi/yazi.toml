@@ -30,26 +30,30 @@ preloaders = []
   url = "*"
 
   [[plugin.prepend_fetchers]]
-  id   = "mime"
-  prio = "high"
-  run  = "mime-ext.local"
-  url  = "local://*"
+  id    = "mime"
+  group = "mime"
+  prio  = "high"
+  run   = "mime-ext.local"
+  url   = "local://*"
 
   [[plugin.prepend_fetchers]]
-  id   = "mime"
-  prio = "high"
-  run  = "mime-ext.remote"
-  url  = "remote://*"
+  id    = "mime"
+  group = "mime"
+  prio  = "high"
+  run   = "mime-ext.remote"
+  url   = "remote://*"
 
   [[plugin.prepend_fetchers]]
-  id   = "git"
-  url = "*"
-  run  = "git"
+  id    = "git"
+  group = "git"
+  url   = "*"
+  run   = "git"
 
   [[plugin.prepend_fetchers]]
-  id   = "git"
-  url = "*/"
-  run  = "git"
+  id    = "git"
+  group = "git"
+  url   = "*/"
+  run   = "git"
 
 [preview]
 max_height = 1000
