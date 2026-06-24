@@ -5,6 +5,59 @@ local function root_pattern(glob)
   )
 end
 
+local function read_local_gopls_config(root_dir)
+  if not root_dir or root_dir == '' then
+    return nil
+  end
+
+  local path = vim.fs.joinpath(root_dir, '.nvim', 'gopls.json')
+  if vim.fn.filereadable(path) == 0 then
+    return nil
+  end
+
+  local ok, lines = pcall(vim.fn.readfile, path)
+  if not ok then
+    return nil
+  end
+
+  local decoded
+  ok, decoded = pcall(vim.json.decode, table.concat(lines, '\n'))
+  if not ok or type(decoded) ~= 'table' then
+    vim.notify(('Invalid local gopls config: %s'):format(path), vim.log.levels.WARN)
+    return nil
+  end
+
+  return decoded
+end
+
+local function apply_local_gopls_config(params, config)
+  local root_dir = config.root_dir or params.rootPath
+  if (not root_dir or root_dir == '') and params.rootUri then
+    root_dir = vim.uri_to_fname(params.rootUri)
+  end
+
+  local local_config = read_local_gopls_config(root_dir)
+  if not local_config then
+    return
+  end
+
+  if type(local_config.directoryFilters) == 'table' then
+    local settings = config.settings or {}
+    local gopls = settings.gopls or {}
+    local filters = vim.deepcopy(gopls.directoryFilters or {})
+
+    for _, filter in ipairs(local_config.directoryFilters) do
+      if type(filter) == 'string' and filter ~= '' then
+        table.insert(filters, filter)
+      end
+    end
+
+    gopls.directoryFilters = filters
+    settings.gopls = gopls
+    config.settings = settings
+  end
+end
+
 local function setup_lspconfig()
   ---@type table<string,vim.lsp.Config>
   local configs = {
@@ -44,6 +97,7 @@ local function setup_lspconfig()
       cmd = { 'gopls' },
       filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' },
       root_markers = { 'go.work', 'go.mod' },
+      before_init = apply_local_gopls_config,
       settings = {
         gopls = {
           gofumpt = true,
@@ -360,11 +414,17 @@ local function setup_lspconfig()
   ---@type vim.lsp.Config
   local attachCodeLens = {
     on_attach = function(client, bufnr)
+      if client.name == 'gopls' then
+        return
+      end
+
       if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_codeLens, bufnr) then
-        vim.lsp.codelens.refresh()
+        vim.lsp.codelens.refresh { bufnr = bufnr }
         vim.api.nvim_create_autocmd({ 'BufEnter', 'InsertLeave' }, {
           buffer = bufnr,
-          callback = vim.lsp.codelens.refresh,
+          callback = function()
+            vim.lsp.codelens.refresh { bufnr = bufnr }
+          end,
         })
       end
     end,
