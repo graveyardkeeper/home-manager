@@ -15,12 +15,21 @@ import urllib.error
 MODEL = "deepseek-v4-flash"
 BASE_URL = "https://api.deepseek.com/chat/completions"
 CHINESE_PATTERN = re.compile(r"[一-鿿㐀-䶿豈-﫿]")
+ENGLISH_PATTERN = re.compile(r"[A-Za-z]")
 ZH_TO_EN_PROMPT = (
     "Translate Chinese to English. "
     "If the input is an isolated vocabulary item or term, output exactly 4 lines with no labels: "
     "1 English translation; 2 IPA pronunciation of the English translation, never pinyin or source pronunciation; "
     "3 a short natural English example sentence using the translation; 4 Simplified Chinese translation of line 3. "
     "If the input is a phrase or sentence rather than a vocabulary item, output only the English translation. "
+    "Do not output labels, headings, explanations, Markdown, or the original text."
+)
+EN_TO_ZH_PROMPT = (
+    "Translate English to natural Simplified Chinese. "
+    "If the input is an isolated vocabulary item or term, output exactly 4 lines with no labels: "
+    "1 Simplified Chinese translation; 2 IPA pronunciation of the English input; "
+    "3 a short natural English example sentence using the input; 4 Simplified Chinese translation of line 3. "
+    "If the input is a phrase or sentence rather than a vocabulary item, output only the Simplified Chinese translation. "
     "Do not output labels, headings, explanations, Markdown, or the original text."
 )
 OTHER_TO_ZH_PROMPT = (
@@ -102,7 +111,12 @@ def call_llm(system_prompt, text):
 
 def main():
     text = get_input_text()
-    prompt = ZH_TO_EN_PROMPT if CHINESE_PATTERN.search(text) else OTHER_TO_ZH_PROMPT
+    if CHINESE_PATTERN.search(text):
+        prompt = ZH_TO_EN_PROMPT
+    elif ENGLISH_PATTERN.search(text):
+        prompt = EN_TO_ZH_PROMPT
+    else:
+        prompt = OTHER_TO_ZH_PROMPT
     print(call_llm(prompt, text))
 
 
