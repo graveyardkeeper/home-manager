@@ -1,14 +1,38 @@
 local M = {}
 
 function M.show_temporary_popup(text)
+  local max_width = math.max(20, vim.o.columns - 4)
+
+  local function wrap_line(line)
+    if vim.fn.strdisplaywidth(line) <= max_width then return { line } end
+
+    local wrapped = {}
+    local current = ''
+    for i = 0, vim.fn.strchars(line) - 1 do
+      local char = vim.fn.strcharpart(line, i, 1)
+      if current ~= '' and vim.fn.strdisplaywidth(current .. char) > max_width then
+        table.insert(wrapped, current)
+        current = char
+      else
+        current = current .. char
+      end
+    end
+    table.insert(wrapped, current)
+    return wrapped
+  end
+
   -- 计算窗口大小
-  local lines = vim.split(text, '\n')
+  local lines = {}
+  for _, line in ipairs(vim.split(text, '\n')) do
+    vim.list_extend(lines, wrap_line(line))
+  end
+
   local max_line_length = 0
   for _, line in ipairs(lines) do
     max_line_length = math.max(max_line_length, vim.fn.strdisplaywidth(line))
   end
-  local width = math.min(max_line_length, vim.o.columns - 4) -- 限制最大宽度
-  local height = #lines
+  local width = math.min(max_line_length, max_width)
+  local height = math.min(#lines, math.max(1, vim.o.lines - 4))
 
   -- 创建浮动窗口配置
   local win_opts = {
