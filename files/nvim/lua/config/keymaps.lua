@@ -317,7 +317,7 @@ map {
 }
 
 map { '<D-k><D-k>', vim.lsp.buf.signature_help, mode = i, desc = 'Signature Help' }
-map { '<D-k><D-k>', '<cmd>Translate zh<cr>', mode = x, desc = 'Translate' }
+map { '<leader>tt', '<cmd>Translate zh<cr>', mode = x, desc = 'Translate' }
 
 -- diagnostic
 local diagnostic_goto = function(next, severity)
