@@ -51,9 +51,42 @@ function M.setup_mini_ai()
   return true
 end
 
+function M.translate_selection()
+  local cursor_pos = vim.fn.getcurpos()
+  local visual_pos = vim.fn.getpos 'v'
+  local anchor = visual_pos
+  if cursor_pos[2] < visual_pos[2] or (cursor_pos[2] == visual_pos[2] and cursor_pos[3] < visual_pos[3]) then anchor = cursor_pos end
+
+  local save_reg = vim.fn.getreg 'z'
+  local save_regtype = vim.fn.getregtype 'z'
+  vim.cmd 'normal! "zy'
+  local text = vim.fn.getreg 'z'
+  vim.fn.setreg('z', save_reg, save_regtype)
+
+  if text == '' then return end
+
+  local fish = vim.fn.expand '~/.nix-profile/bin/fish'
+  if vim.fn.executable(fish) == 0 then
+    vim.notify('fish is not executable', vim.log.levels.ERROR)
+    return
+  end
+
+  local output = vim.fn.systemlist({ fish, '-lc', 'exec translate "$argv[1]"', text })
+  if vim.v.shell_error ~= 0 then
+    vim.notify(table.concat(output, '\n'), vim.log.levels.ERROR)
+    return
+  end
+
+  local line_count = vim.api.nvim_buf_line_count(0)
+  if anchor[2] >= 1 and anchor[2] <= line_count then vim.api.nvim_win_set_cursor(0, { anchor[2], anchor[3] - 1 }) end
+  require('util.ui').show_temporary_popup(table.concat(output, '\n'))
+end
+
 function M.set_keymap(buf)
+  vim.g.mapleader = ' '
   require 'config.keymaps'
   local map = function(mode, lhs, rhs) vim.keymap.set(mode, lhs, rhs, { buffer = buf }) end
+  map('x', '<leader>tt', function() M.translate_selection() end)
   map('x', 'q', 'y<Cmd>qa!<CR>')
   map('n', 'q', '<Cmd>qa!<CR>')
   map('n', '<C-q>', '<Cmd>qa!<CR>')
