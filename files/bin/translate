@@ -27,8 +27,10 @@ ZH_TO_EN_PROMPT = (
 EN_TO_ZH_PROMPT = (
     "Translate English to natural Simplified Chinese. "
     "If the input is an isolated vocabulary item or term, output exactly 4 lines with no labels: "
-    "1 Simplified Chinese translation; 2 IPA pronunciation of the English input; "
-    "3 a short natural English example sentence using the input; 4 Simplified Chinese translation of line 3. "
+    "1 common Simplified Chinese meanings, listing all frequent senses separated by Chinese semicolons; "
+    "2 IPA pronunciation of the English input; "
+    "3 a short natural English example sentence using the input in its most common sense; "
+    "4 Simplified Chinese translation of line 3. "
     "If the input is a phrase or sentence rather than a vocabulary item, output only the Simplified Chinese translation. "
     "Do not output labels, headings, explanations, Markdown, or the original text."
 )
