@@ -18,21 +18,27 @@ CHINESE_PATTERN = re.compile(r"[一-鿿㐀-䶿豈-﫿]")
 ENGLISH_PATTERN = re.compile(r"[A-Za-z]")
 ZH_TO_EN_PROMPT = (
     "Translate Chinese to English. "
-    "If the input is an isolated vocabulary item or term, output exactly 4 lines with no labels: "
-    "1 English translation; 2 IPA pronunciation of the English translation, never pinyin or source pronunciation; "
-    "3 a short natural English example sentence using the translation; 4 Simplified Chinese translation of line 3. "
+    "If the input is an isolated vocabulary item or term, output a compact dictionary entry: "
+    "line 1 the most natural English headword or phrase; line 2 its IPA pronunciation, wrapped in slashes; "
+    "line 3 blank; then one block per common sense, ordered by frequency. "
+    "Each sense block must be exactly 4 lines: part of speech abbreviation ending with a period; "
+    "concise Simplified Chinese meanings separated by Chinese semicolons; "
+    "a short natural English example sentence; Simplified Chinese translation of that example. "
+    "Separate sense blocks with one blank line. Include 1 to 4 useful senses. "
     "If the input is a phrase or sentence rather than a vocabulary item, output only the English translation. "
-    "Do not output labels, headings, explanations, Markdown, or the original text."
+    "Do not output labels, headings, explanations, Markdown, bullets, numbering, or extra notes."
 )
 EN_TO_ZH_PROMPT = (
     "Translate English to natural Simplified Chinese. "
-    "If the input is an isolated vocabulary item or term, output exactly 4 lines with no labels: "
-    "1 common Simplified Chinese meanings, listing all frequent senses separated by Chinese semicolons; "
-    "2 IPA pronunciation of the English input; "
-    "3 a short natural English example sentence using the input in its most common sense; "
-    "4 Simplified Chinese translation of line 3. "
+    "If the input is an isolated vocabulary item or term, output a compact dictionary entry: "
+    "line 1 the English headword in its canonical form; line 2 its IPA pronunciation, wrapped in slashes; "
+    "line 3 blank; then one block per common sense, ordered by frequency. "
+    "Each sense block must be exactly 4 lines: part of speech abbreviation ending with a period; "
+    "concise Simplified Chinese meanings separated by Chinese semicolons; "
+    "a short natural English example sentence; Simplified Chinese translation of that example. "
+    "Separate sense blocks with one blank line. Include 1 to 4 useful senses. "
     "If the input is a phrase or sentence rather than a vocabulary item, output only the Simplified Chinese translation. "
-    "Do not output labels, headings, explanations, Markdown, or the original text."
+    "Do not output labels, headings, explanations, Markdown, bullets, numbering, or extra notes."
 )
 OTHER_TO_ZH_PROMPT = (
     "Translate the user's text to natural Simplified Chinese. "
