@@ -33,6 +33,18 @@ local function termcodes(str)
   return vim.api.nvim_replace_termcodes(str, true, true, true)
 end
 
+local function translate_visual_selection()
+  local save_reg = vim.fn.getreg 'z'
+  local save_regtype = vim.fn.getregtype 'z'
+  vim.cmd 'normal! "zy'
+  local text = vim.fn.getreg 'z'
+  vim.fn.setreg('z', save_reg, save_regtype)
+
+  if text == '' then return end
+
+  require('util.translate').show_popup(text)
+end
+
 map { '<PageDown>', '<C-d>' }
 map { '<PageUp>', '<C-u>' }
 
@@ -317,7 +329,7 @@ map {
 }
 
 map { '<D-k><D-k>', vim.lsp.buf.signature_help, mode = i, desc = 'Signature Help' }
-map { '<leader>tt', '<cmd>Translate zh<cr>', mode = x, desc = 'Translate' }
+map { '<leader>tt', translate_visual_selection, mode = x, desc = 'Translate' }
 
 -- diagnostic
 local diagnostic_goto = function(next, severity)

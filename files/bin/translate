@@ -5,6 +5,7 @@
 使用 DeepSeek API 翻译
 """
 
+import argparse
 import json
 import os
 import re
@@ -40,6 +41,21 @@ EN_TO_ZH_PROMPT = (
     "If the input is a phrase or sentence rather than a vocabulary item, output only the Simplified Chinese translation. "
     "Do not output labels, headings, explanations, Markdown, bullets, numbering, or extra notes."
 )
+STRUCTURED_PROMPT = (
+    "Translate the user's text. Output only strict JSON, with no Markdown fences or notes. "
+    "If the input is an isolated vocabulary item or term, return: "
+    "{\"type\":\"entry\",\"headword\":string,\"ipa\":string,\"senses\":[{"
+    "\"pos\":string,\"meaning\":string,\"example\":string,\"translation\":string,\"keywords\":[string]}]}. "
+    "For English input, headword is the canonical English form and meaning/translation are Simplified Chinese. "
+    "For Chinese input, headword is the most natural English translation, ipa is for that English headword, "
+    "meaning is Simplified Chinese, example is English, and translation is Simplified Chinese. "
+    "Use 1 to 4 common senses ordered by frequency. Pos must be an abbreviation ending with a period. "
+    "Meaning should be concise and use Chinese semicolons between close senses. "
+    "Keywords are the exact English words or phrases in the example that deserve emphasis, including the headword when present. "
+    "If the input is a phrase, sentence, code, command, URL, or non-vocabulary text, return: "
+    "{\"type\":\"text\",\"translation\":string}. "
+    "Preserve code, commands, URLs, file paths, placeholders, and Markdown formatting in text translations."
+)
 OTHER_TO_ZH_PROMPT = (
     "Translate the user's text to natural Simplified Chinese. "
     "Preserve code, commands, URLs, file paths, placeholders, and Markdown formatting. "
@@ -47,12 +63,21 @@ OTHER_TO_ZH_PROMPT = (
 )
 
 
-def get_input_text():
-    """获取输入文本，支持命令行参数或 stdin"""
-    args = sys.argv[1:]
+def parse_args():
+    parser = argparse.ArgumentParser(description="Translate text with DeepSeek")
+    parser.add_argument("--format", choices=("text", "json"), default="text")
+    parser.add_argument("--json", action="store_true", help="Shortcut for --format json")
+    parser.add_argument("text", nargs="*")
+    args = parser.parse_args()
+    if args.json:
+        args.format = "json"
+    return args
 
-    if args:
-        text = " ".join(args)
+
+def get_input_text(args):
+    """获取输入文本，支持命令行参数或 stdin"""
+    if args.text:
+        text = " ".join(args.text)
     else:
         text = sys.stdin.read().strip()
 
@@ -117,15 +142,160 @@ def call_llm(system_prompt, text):
         sys.exit(1)
 
 
-def main():
-    text = get_input_text()
+def choose_prompt(text, output_format):
+    if output_format == "json":
+        return STRUCTURED_PROMPT
     if CHINESE_PATTERN.search(text):
-        prompt = ZH_TO_EN_PROMPT
-    elif ENGLISH_PATTERN.search(text):
-        prompt = EN_TO_ZH_PROMPT
+        return ZH_TO_EN_PROMPT
+    if ENGLISH_PATTERN.search(text):
+        return EN_TO_ZH_PROMPT
+    return OTHER_TO_ZH_PROMPT
+
+
+def strip_json_fence(text):
+    text = text.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+    return text.strip()
+
+
+def as_string(value):
+    if isinstance(value, str):
+        return value.strip()
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+def byte_col(text, char_index):
+    return len(text[:char_index].encode("utf-8"))
+
+
+def add_highlight(highlights, line_index, line, start, end, group, priority=100):
+    if start >= end:
+        return
+    highlights.append(
+        {
+            "line": line_index,
+            "start_col": byte_col(line, start),
+            "end_col": byte_col(line, end),
+            "group": group,
+            "priority": priority,
+        }
+    )
+
+
+def add_literal_highlights(highlights, line_index, line, text, group, priority=120):
+    text = as_string(text)
+    if not text:
+        return
+    pattern = re.compile(re.escape(text), re.IGNORECASE)
+    for match in pattern.finditer(line):
+        add_highlight(highlights, line_index, line, match.start(), match.end(), group, priority)
+
+
+def append_line(lines, highlights, line, group=None, start=0, end=None, priority=80):
+    line_index = len(lines)
+    lines.append(line)
+    if group and line:
+        add_highlight(highlights, line_index, line, start, len(line) if end is None else end, group, priority)
+    return line_index
+
+
+def render_text_payload(translation):
+    lines = as_string(translation).splitlines() or [""]
+    highlights = []
+    for index, line in enumerate(lines):
+        add_highlight(highlights, index, line, 0, len(line), "translation", 80)
+    return {"type": "text", "lines": lines, "highlights": highlights}
+
+
+def render_entry_payload(data):
+    headword = as_string(data.get("headword"))
+    ipa = as_string(data.get("ipa"))
+    raw_senses = data.get("senses") if isinstance(data.get("senses"), list) else []
+    senses = [sense for sense in raw_senses if isinstance(sense, dict)][:4]
+
+    lines = []
+    highlights = []
+
+    title = f"◆ {headword}" if headword else "◆ Translation"
+    title_index = append_line(lines, highlights, title)
+    add_highlight(highlights, title_index, title, 0, 1, "bullet", 130)
+    if headword:
+        add_literal_highlights(highlights, title_index, title, headword, "headword", 140)
+
+    if ipa:
+        append_line(lines, highlights, f"  {ipa}", "ipa", 2, None, 90)
+    append_line(lines, highlights, "")
+
+    for sense_index, sense in enumerate(senses):
+        if sense_index > 0:
+            append_line(lines, highlights, "")
+
+        pos = as_string(sense.get("pos"))
+        meaning = as_string(sense.get("meaning"))
+        example = as_string(sense.get("example"))
+        translation = as_string(sense.get("translation"))
+        keywords = sense.get("keywords") if isinstance(sense.get("keywords"), list) else []
+        keywords = [as_string(keyword) for keyword in keywords if as_string(keyword)]
+        if headword and headword not in keywords:
+            keywords.append(headword)
+
+        header = f"▸ {pos}  {meaning}" if pos else f"▸ {meaning}"
+        header_index = append_line(lines, highlights, header)
+        add_highlight(highlights, header_index, header, 0, 1, "bullet", 130)
+        if pos:
+            add_literal_highlights(highlights, header_index, header, pos, "pos", 130)
+        if meaning:
+            add_literal_highlights(highlights, header_index, header, meaning, "meaning", 90)
+
+        if example:
+            example_line = f"  {example}"
+            example_index = append_line(lines, highlights, example_line, "example", 2, None, 70)
+            for keyword in keywords:
+                add_literal_highlights(highlights, example_index, example_line, keyword, "keyword", 160)
+
+        if translation:
+            translation_line = f"  ↳ {translation}"
+            translation_index = append_line(lines, highlights, translation_line, "translation", 4, None, 80)
+            add_highlight(highlights, translation_index, translation_line, 2, 3, "bullet", 130)
+
+    if not senses:
+        return render_text_payload(headword or ipa)
+
+    return {
+        "type": "entry",
+        "headword": headword,
+        "ipa": ipa,
+        "senses": senses,
+        "lines": lines,
+        "highlights": highlights,
+    }
+
+
+def build_structured_payload(llm_output):
+    try:
+        data = json.loads(strip_json_fence(llm_output))
+    except json.JSONDecodeError:
+        return render_text_payload(llm_output)
+
+    if not isinstance(data, dict):
+        return render_text_payload(llm_output)
+    if data.get("type") == "entry":
+        return render_entry_payload(data)
+    return render_text_payload(data.get("translation", llm_output))
+
+
+def main():
+    args = parse_args()
+    text = get_input_text(args)
+    output = call_llm(choose_prompt(text, args.format), text)
+    if args.format == "json":
+        print(json.dumps(build_structured_payload(output), ensure_ascii=False))
     else:
-        prompt = OTHER_TO_ZH_PROMPT
-    print(call_llm(prompt, text))
+        print(output)
 
 
 if __name__ == "__main__":

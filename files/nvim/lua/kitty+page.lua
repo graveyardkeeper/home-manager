@@ -65,28 +65,10 @@ function M.translate_selection()
 
   if text == '' then return end
 
-  local fish = vim.fn.expand '~/.nix-profile/bin/fish'
-  if vim.fn.executable(fish) == 0 then
-    vim.notify('fish is not executable', vim.log.levels.ERROR)
-    return
-  end
-
   local line_count = vim.api.nvim_buf_line_count(0)
   if anchor[2] >= 1 and anchor[2] <= line_count then vim.api.nvim_win_set_cursor(0, { anchor[2], anchor[3] - 1 }) end
 
-  vim.system({ fish, '-lc', 'exec translate "$argv[1]"', text }, { text = true, timeout = 20000 }, function(result)
-    vim.schedule(function()
-      if result.code ~= 0 then
-        local message = result.stderr ~= '' and result.stderr or result.stdout
-        vim.notify(vim.trim(message), vim.log.levels.ERROR)
-        return
-      end
-
-      local output = vim.trim(result.stdout)
-      if output == '' then return end
-      require('util.ui').show_temporary_popup(output)
-    end)
-  end)
+  require('util.translate').show_popup(text)
 end
 
 function M.set_keymap(buf)
