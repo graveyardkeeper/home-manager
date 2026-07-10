@@ -206,6 +206,75 @@ function M.show_temporary_popup(text, opts)
   })
 end
 
+function M.show_loading_popup(title)
+  set_popup_highlights()
+
+  local frames = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏' }
+  local index = 1
+  local text = title or 'Loading'
+  local line = text .. ' ' .. frames[index]
+  local width = math.max(vim.fn.strdisplaywidth(line), 1)
+
+  local buf = vim.api.nvim_create_buf(false, true)
+  local win = vim.api.nvim_open_win(buf, false, {
+    relative = 'cursor',
+    row = 1,
+    col = 0,
+    width = width,
+    height = 1,
+    style = 'minimal',
+    border = 'rounded',
+    focusable = false,
+    noautocmd = true,
+  })
+
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, { line })
+  vim.api.nvim_set_option_value('modifiable', false, { buf = buf })
+  vim.api.nvim_set_option_value('buftype', 'nofile', { buf = buf })
+  vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = buf })
+  vim.api.nvim_set_option_value('winhl', 'FloatBorder:TempPopupBorder', { win = win })
+
+  local namespace = vim.api.nvim_create_namespace 'TempPopupLoading'
+  local function render()
+    if not vim.api.nvim_buf_is_valid(buf) then return end
+    index = index % #frames + 1
+    line = text .. ' ' .. frames[index]
+    vim.api.nvim_set_option_value('modifiable', true, { buf = buf })
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, { line })
+    vim.api.nvim_set_option_value('modifiable', false, { buf = buf })
+    vim.api.nvim_buf_clear_namespace(buf, namespace, 0, -1)
+    local text_width = #text
+    vim.api.nvim_buf_set_extmark(buf, namespace, 0, 0, {
+      end_col = text_width,
+      hl_group = 'TempPopupTranslation',
+      priority = 100,
+    })
+    vim.api.nvim_buf_set_extmark(buf, namespace, 0, text_width + 1, {
+      end_col = #line,
+      hl_group = 'TempPopupBullet',
+      priority = 120,
+    })
+  end
+
+  render()
+
+  local timer = vim.uv.new_timer()
+  timer:start(80, 80, function() vim.schedule(render) end)
+
+  local closed = false
+  local function close()
+    if closed then return end
+    closed = true
+    if timer then
+      timer:stop()
+      timer:close()
+    end
+    if vim.api.nvim_win_is_valid(win) then vim.api.nvim_win_close(win, true) end
+  end
+
+  return close
+end
+
 function M.show_translate_popup(payload)
   if type(payload) ~= 'table' or type(payload.lines) ~= 'table' then return end
   M.show_temporary_popup(table.concat(payload.lines, '\n'), {

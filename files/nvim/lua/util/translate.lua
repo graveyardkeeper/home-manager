@@ -13,8 +13,10 @@ end
 function M.show_popup(text)
   if text == '' then return end
 
+  local close_loading = require('util.ui').show_loading_popup 'Translating'
   vim.system(command(text), { text = true, timeout = 20000 }, function(result)
     vim.schedule(function()
+      if close_loading then close_loading() end
       if result.code ~= 0 then
         local message = result.stderr ~= '' and result.stderr or result.stdout
         vim.notify(vim.trim(message), vim.log.levels.ERROR)
