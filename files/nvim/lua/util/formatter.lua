@@ -161,6 +161,66 @@ function M.format_timestamp(timestamp)
   return string.format('%s (%s)', formatted_time, time_desc)
 end
 
+local function timestamp_from_parts(year, month, day, hour, min, sec)
+  local date = {
+    year = tonumber(year),
+    month = tonumber(month),
+    day = tonumber(day),
+    hour = tonumber(hour) or 0,
+    min = tonumber(min) or 0,
+    sec = tonumber(sec) or 0,
+  }
+  if not (date.year and date.month and date.day and date.hour and date.min and date.sec) then return end
+
+  local timestamp = os.time(date)
+  local normalized = os.date('*t', timestamp)
+  if normalized.year ~= date.year or normalized.month ~= date.month or normalized.day ~= date.day then return end
+  if normalized.hour ~= date.hour or normalized.min ~= date.min or normalized.sec ~= date.sec then return end
+
+  return timestamp
+end
+
+---@param text string
+---@return integer?
+function M.parse_datetime(text)
+  text = vim.trim(text):gsub('T', ' '):gsub('Z$', '')
+
+  local year, month, day, hour, min, sec = text:match '^(%d%d%d%d)[%-/](%d%d?)[%-/](%d%d?)%s+(%d%d?):(%d%d):(%d%d)$'
+  if year then return timestamp_from_parts(year, month, day, hour, min, sec) end
+
+  year, month, day, hour, min = text:match '^(%d%d%d%d)[%-/](%d%d?)[%-/](%d%d?)%s+(%d%d?):(%d%d)$'
+  if year then return timestamp_from_parts(year, month, day, hour, min, 0) end
+
+  year, month, day = text:match '^(%d%d%d%d)[%-/](%d%d?)[%-/](%d%d?)$'
+  if year then return timestamp_from_parts(year, month, day, 0, 0, 0) end
+
+  hour, min, sec = text:match '^(%d%d?):(%d%d):(%d%d)$'
+  if hour then
+    local today = os.date '*t'
+    return timestamp_from_parts(today.year, today.month, today.day, hour, min, sec)
+  end
+
+  hour, min = text:match '^(%d%d?):(%d%d)$'
+  if hour then
+    local today = os.date '*t'
+    return timestamp_from_parts(today.year, today.month, today.day, hour, min, 0)
+  end
+end
+
+---@param text string
+---@return string?
+function M.format_datetime_timestamp(text)
+  local timestamp = M.parse_datetime(text)
+  if not timestamp then return end
+
+  return string.format(
+    '%s\n秒级时间戳: %d\n毫秒级时间戳: %d',
+    os.date('%Y-%m-%d %H:%M:%S', timestamp),
+    timestamp,
+    timestamp * 1000
+  )
+end
+
 ---@param action table
 ---@param buf integer
 ---@param timeout_ms integer

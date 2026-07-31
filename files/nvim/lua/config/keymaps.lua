@@ -301,14 +301,25 @@ map { '<D-/>', 'gc', mode = x, remap = true }
 map { '<C-Space>', function() end, mode = i } -- disable this keymap as it's for toggle system input method
 
 map {
-  '<D-k><D-k>',
+  '<leader>ut',
   function()
     local current_word = vim.fn.expand '<cword>'
+    local formatter = require 'util.formatter'
     if current_word:match '^%d+$' and (#current_word == 10 or #current_word == 13) then
       local timestamp = tonumber(current_word) or 0
       if #current_word == 13 then timestamp = timestamp / 1000 end
-      local time_format = require('util.formatter').format_timestamp(timestamp)
+      local time_format = formatter.format_timestamp(timestamp)
       require('util.ui').show_temporary_popup(time_format)
+      return
+    end
+
+    local line = vim.api.nvim_get_current_line()
+    local datetime = line:match '%d%d%d%d[%-/]%d%d?[%-/]%d%d?[%sT]+%d%d?:%d%d:?%d*'
+      or line:match '%d%d%d%d[%-/]%d%d?[%-/]%d%d?'
+      or line:match '%d%d?:%d%d:?%d*'
+    local timestamp_format = datetime and formatter.format_datetime_timestamp(datetime)
+    if timestamp_format then
+      require('util.ui').show_temporary_popup(timestamp_format)
     elseif vim.startswith(vim.fn.expand '<cfile>', 'http') then
       require('util.image').show_hover_image()
     elseif require('util.treesitter').cursor_in_capture 'comment' then
