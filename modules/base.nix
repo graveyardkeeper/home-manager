@@ -51,6 +51,7 @@
     tree-sitter
     typos-lsp
     uv
+    visidata
     yazi
     zip
     zk

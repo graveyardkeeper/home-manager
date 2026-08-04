@@ -104,6 +104,13 @@ clipboard_to_jq() {
   rm "$tmp"
 }
 
+open_spreadsheet() {
+  if exist_command vd; then
+    exec vd "$@"
+  fi
+  exec open "$@"
+}
+
 add_audio_option() {
   if [[ -n "${SSH_CONNECTION:-}" ]]; then
     append_option remote_mpv_audio
@@ -189,7 +196,8 @@ cast) prepend_option "asciinema play" ;;
 jq) append_option "clipboard_to_jq" ;;
 zip | rar | 7z | 7zip | tar | tar.gz | tgz | tar.bz2 | tbz2 | tar.xz | txz | tar.zst | tzst | gz | bz2 | xz | zst) prepend_option "extract" ;;
 avif | bmp | gif | heic | jpeg | jpe | jpg | pgm | png | ppm | webp) append_option "kitten icat" ;;
-odt | odf | ods | odp | doc | docx | xls | xlsx | ppt | pptx) ;;
+csv | tsv | ods | xls | xlsx | xlsb | xlsm) prepend_option open_spreadsheet ;;
+odt | odf | odp | doc | docx | ppt | pptx) ;;
 apk) append_option "adb install -r" ;;
 ncm) append_option "ncmdump" ;;
 step) prepend_option "foxtrot" ;;
