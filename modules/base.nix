@@ -44,6 +44,7 @@
     neovim-remote
     nixfmt
     nodejs
+    posting
     prettierd
     python3
     ripgrep
