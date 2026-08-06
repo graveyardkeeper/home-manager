@@ -37,6 +37,7 @@
     jq
     just
     kitty
+    lazysql
     markdownlint-cli
     mitmproxy
     mpv
