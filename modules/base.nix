@@ -3,6 +3,7 @@
 {
   home.sessionVariables = {
     EDITOR = "nvim";
+    CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN = "1";
     XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";
     GOPATH = "${config.home.homeDirectory}/workspace/go";
     GOSUMDB = "sum.golang.google.cn";
