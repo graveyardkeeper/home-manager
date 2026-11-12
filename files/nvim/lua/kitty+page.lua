@@ -172,7 +172,6 @@ end
 
 function M.set_term_buf()
   local term_buf = vim.api.nvim_create_buf(true, false)
-  local term_io = vim.api.nvim_open_term(term_buf, {})
   local group = vim.api.nvim_create_augroup('kitty+page_set_term_buf', { clear = true })
 
   vim.api.nvim_create_autocmd('VimEnter', {
@@ -184,12 +183,18 @@ function M.set_term_buf()
       -- Instead of sending lines individually, concatenate them.
       local main_lines = vim.api.nvim_buf_get_lines(ev.buf, 0, -2, false)
       local content = table.concat(main_lines, '\r\n')
+      local last_line = vim.api.nvim_buf_get_lines(ev.buf, -2, -1, false)[1]
+
+      -- Open the terminal only after displaying its buffer. Otherwise Neovim
+      -- initially uses a fallback terminal width and may reflow wide CJK
+      -- characters incorrectly when the snapshot window has another width.
+      vim.api.nvim_win_set_buf(current_win, term_buf)
+      local term_io = vim.api.nvim_open_term(term_buf, {})
+      vim.bo[term_buf].scrollback = 100000
       vim.api.nvim_chan_send(term_io, content .. '\r\n')
 
       -- Process the last line separately (without trailing \r\n)
-      local last_line = vim.api.nvim_buf_get_lines(ev.buf, -2, -1, false)[1]
       if last_line then vim.api.nvim_chan_send(term_io, last_line) end
-      vim.api.nvim_win_set_buf(current_win, term_buf)
       vim.api.nvim_buf_delete(ev.buf, { force = true })
     end,
   })
